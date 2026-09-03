@@ -36,9 +36,12 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
             <HamburgerButton onClick={onMenuOpen ?? (() => {})} />
             <a href="/" className="flex items-center gap-2 lg:hidden">
               <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xs">W</span>
+                <span className="text-primary-foreground font-bold text-[10px] leading-none">EF</span>
               </div>
-              <span className="text-sm font-bold text-foreground tracking-tight">Wexora</span>
+              <div className="flex flex-col leading-none">
+                <span className="text-[11px] font-extrabold text-foreground tracking-tight">ESTATEFUND</span>
+                <span className="text-[8px] font-semibold text-muted-foreground tracking-[0.12em] uppercase">Invest</span>
+              </div>
             </a>
           </div>
 

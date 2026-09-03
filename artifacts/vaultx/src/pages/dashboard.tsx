@@ -87,82 +87,75 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="px-4 md:px-6 pt-5 pb-28 space-y-6">
+      <div className="px-4 md:px-6 pt-4 pb-28 space-y-4 md:space-y-6">
 
         {/* ═══════════════════════════════════════════════════════════════
            A. PERSONAL PORTFOLIO HERO
            ═══════════════════════════════════════════════════════════════ */}
-        <div className="space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">{greeting}</p>
-              {user ? (
-                <h1 className="text-2xl font-bold text-foreground mt-0.5">
-                  {user.fullName || `@${user.username}`}
-                </h1>
-              ) : (
-                <Skeleton className="h-7 w-40 mt-1.5" />
-              )}
-              <p className="text-sm text-muted-foreground mt-1">Here's how your property portfolio is performing.</p>
-            </div>
-            <div className="text-right hidden sm:block">
-              <p className="text-xs text-muted-foreground font-medium">
-                {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-              </p>
-            </div>
+        <div className="space-y-3 animate-fade-in">
+          <div>
+            <p className="text-xs text-muted-foreground font-medium">{greeting}</p>
+            {user ? (
+              <h1 className="text-xl md:text-2xl font-bold text-foreground mt-0.5">
+                {user.fullName || `@${user.username}`}
+              </h1>
+            ) : (
+              <Skeleton className="h-6 w-40 mt-1.5" />
+            )}
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">Your property portfolio at a glance.</p>
           </div>
 
           {/* Hero financial card */}
-          <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-2xl p-6 text-white shadow-xl shadow-emerald-900/25">
+          <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-2xl p-4 md:p-6 text-white shadow-xl shadow-emerald-900/25">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[11px] text-white/50 uppercase tracking-wider font-medium">Total Invested</p>
-              <Link href="/wallet" className="text-[11px] text-white/40 hover:text-white/80 flex items-center gap-0.5 transition-colors">
+              <p className="text-[10px] md:text-[11px] text-white/50 uppercase tracking-wider font-medium">Total Invested</p>
+              <Link href="/wallet" className="text-[10px] md:text-[11px] text-white/40 hover:text-white/80 flex items-center gap-0.5 transition-colors">
                 Wallet <ChevronRight size={10} />
               </Link>
             </div>
             {summaryLoading ? (
-              <Skeleton className="h-11 w-52 bg-white/15 mb-3" />
+              <Skeleton className="h-9 md:h-11 w-44 md:w-52 bg-white/15 mb-2" />
             ) : (
-              <p className="text-4xl font-bold tracking-tight tabular-nums">
+              <p className="text-3xl md:text-4xl font-bold tracking-tight tabular-nums">
                 {formatUSDT(summary?.activeInvestmentsValue ?? 0)}
               </p>
             )}
 
-            {/* KPI row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5">
-              <div className="bg-white/10 rounded-xl px-3 py-2.5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <TrendingUp size={11} className="text-emerald-200" />
-                  <p className="text-[9px] text-white/45 uppercase tracking-wider font-medium">Daily Earnings</p>
+            {/* KPI row — 2 cols mobile, 4 cols desktop */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+              <div className="bg-white/10 rounded-xl px-2.5 py-2 backdrop-blur-sm">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <TrendingUp size={10} className="text-emerald-200" />
+                  <p className="text-[8px] md:text-[9px] text-white/45 uppercase tracking-wider font-medium">Daily Earnings</p>
                 </div>
-                <p className="text-sm font-bold text-white tabular-nums">
+                <p className="text-xs md:text-sm font-bold text-white tabular-nums">
                   {summaryLoading ? "—" : formatUSDT(summary?.dailyEarnings ?? 0)}
                 </p>
               </div>
-              <div className="bg-white/10 rounded-xl px-3 py-2.5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <Target size={11} className="text-emerald-200" />
-                  <p className="text-[9px] text-white/45 uppercase tracking-wider font-medium">Total Earned</p>
+              <div className="bg-white/10 rounded-xl px-2.5 py-2 backdrop-blur-sm">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <Target size={10} className="text-emerald-200" />
+                  <p className="text-[8px] md:text-[9px] text-white/45 uppercase tracking-wider font-medium">Total Earned</p>
                 </div>
-                <p className="text-sm font-bold text-white tabular-nums">
+                <p className="text-xs md:text-sm font-bold text-white tabular-nums">
                   {summaryLoading ? "—" : formatUSDT(summary?.totalEarnings ?? 0)}
                 </p>
               </div>
-              <div className="bg-white/10 rounded-xl px-3 py-2.5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <Home size={11} className="text-emerald-200" />
-                  <p className="text-[9px] text-white/45 uppercase tracking-wider font-medium">Active Properties</p>
+              <div className="bg-white/10 rounded-xl px-2.5 py-2 backdrop-blur-sm">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <Home size={10} className="text-emerald-200" />
+                  <p className="text-[8px] md:text-[9px] text-white/45 uppercase tracking-wider font-medium">Properties</p>
                 </div>
-                <p className="text-sm font-bold text-white tabular-nums">
+                <p className="text-xs md:text-sm font-bold text-white tabular-nums">
                   {summaryLoading ? "—" : summary?.activeInvestmentsCount ?? 0}
                 </p>
               </div>
-              <div className="bg-white/10 rounded-xl px-3 py-2.5 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <Clock size={11} className="text-amber-200" />
-                  <p className="text-[9px] text-white/45 uppercase tracking-wider font-medium">Pending</p>
+              <div className="bg-white/10 rounded-xl px-2.5 py-2 backdrop-blur-sm">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <Clock size={10} className="text-amber-200" />
+                  <p className="text-[8px] md:text-[9px] text-white/45 uppercase tracking-wider font-medium">Pending</p>
                 </div>
-                <p className="text-sm font-bold text-white tabular-nums">
+                <p className="text-xs md:text-sm font-bold text-white tabular-nums">
                   {summaryLoading ? "—" : summary && summary.pendingEarnings > 0 ? (
                     <LiveEarnings base={summary.pendingEarnings} rate={summary.dailyEarnings} />
                   ) : "0.00 USDT"}
@@ -173,10 +166,9 @@ export default function DashboardPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
-           B. BUSINESS PROMOTIONAL BANNER
+           B. BUSINESS PROMOTIONAL BANNER — Compact on mobile
            ═══════════════════════════════════════════════════════════════ */}
         <div className="relative overflow-hidden rounded-2xl animate-fade-in">
-          {/* Background image */}
           <div className="absolute inset-0">
             <PropertyImage
               src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80"
@@ -185,18 +177,18 @@ export default function DashboardPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 via-emerald-800/80 to-emerald-700/60" />
           </div>
-          {/* Content */}
-          <div className="relative px-6 py-8 md:px-10 md:py-10">
-            <p className="text-[10px] text-emerald-200/60 uppercase tracking-[0.2em] font-bold">EstateFund</p>
-            <h2 className="text-xl md:text-2xl font-bold text-white mt-2 leading-tight max-w-lg">
-              Invest in Real Estate,<br />Built for the Future
+          {/* Mobile: compact. Desktop: full. */}
+          <div className="relative px-4 py-5 md:px-10 md:py-10">
+            <p className="text-[9px] md:text-[10px] text-emerald-200/60 uppercase tracking-[0.2em] font-bold">EstateFund</p>
+            <h2 className="text-lg md:text-2xl font-bold text-white mt-1 md:mt-2 leading-tight max-w-lg">
+              Invest in Real Estate, Built for the Future
             </h2>
-            <p className="text-sm text-white/60 mt-2 max-w-md leading-relaxed">
+            <p className="text-xs md:text-sm text-white/60 mt-1.5 md:mt-2 max-w-md leading-relaxed hidden md:block">
               Explore professionally presented property opportunities across residential, commercial and hospitality markets.
             </p>
-            <div className="flex items-center gap-3 mt-5">
+            <div className="flex items-center gap-3 mt-3 md:mt-5">
               <Link href="/investments">
-                <Button className="bg-white text-emerald-800 hover:bg-white/90 font-semibold rounded-xl px-5 py-2.5 text-sm shadow-lg">
+                <Button className="bg-white text-emerald-800 hover:bg-white/90 font-semibold rounded-xl px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm shadow-lg">
                   Explore Properties <ArrowRight size={14} className="ml-1.5" />
                 </Button>
               </Link>
@@ -225,7 +217,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {activeInvestments.slice(0, 4).map((inv: any) => {
+              {activeInvestments.slice(0, 2).map((inv: any) => {
                 const endDate = new Date(inv.endDate);
                 const now = new Date();
                 const totalMs = endDate.getTime() - new Date(inv.startDate).getTime();
@@ -236,7 +228,7 @@ export default function DashboardPage() {
                 return (
                   <Link key={inv.id} href="/portfolio">
                     <div className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group">
-                      <div className="relative h-32 overflow-hidden">
+                      <div className="relative h-28 md:h-32 overflow-hidden">
                         <PropertyImage
                           src={inv.bannerImageUrl || inv.images?.[0]}
                           alt={inv.planName}
@@ -329,7 +321,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {featuredPlans.map((plan: any) => {
+              {featuredPlans.slice(0, 2).map((plan: any) => {
                 const fundingGoal = plan.fundingGoal ? parseFloat(plan.fundingGoal) : null;
                 const currentFunding = parseFloat(plan.currentFunding ?? "0");
                 const fundingProgress = fundingGoal && fundingGoal > 0 ? Math.min(1, currentFunding / fundingGoal) : 0;
@@ -339,7 +331,7 @@ export default function DashboardPage() {
                 return (
                   <Link key={plan.id} href={`/opportunity/${plan.id}`}>
                     <div className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group h-full flex flex-col">
-                      <div className="relative h-40 overflow-hidden">
+                      <div className="relative h-32 md:h-40 overflow-hidden">
                         <PropertyImage
                           src={plan.bannerImageUrl || plan.images?.[0]}
                           alt={plan.name}
@@ -406,90 +398,88 @@ export default function DashboardPage() {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════
-           E. WHY ESTATEFUND — BENEFITS
+           E. WHY ESTATEFUND — Compact on mobile, full on desktop
            ═══════════════════════════════════════════════════════════════ */}
         <div className="animate-fade-in">
-          <div className="text-center mb-5">
-            <p className="text-[10px] text-primary uppercase tracking-[0.15em] font-bold">Why EstateFund</p>
-            <h2 className="text-lg font-bold text-foreground mt-1.5">A Platform Built for Property Investors</h2>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-              Everything you need to explore, invest and track real estate opportunities.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              {
-                icon: Building2,
-                title: "Property-Focused",
-                desc: "Explore real estate opportunities across residential, commercial and hospitality categories.",
-              },
-              {
-                icon: Eye,
-                title: "Transparent Terms",
-                desc: "See minimum investment, projected return, funding progress and duration before investing.",
-              },
-              {
-                icon: CircleCheck,
-                title: "Structured Investments",
-                desc: "Each investment has its own start date, maturity date and projected return rate.",
-              },
-              {
-                icon: Shield,
-                title: "Secure Account",
-                desc: "Manage your wallet, investments and account verification from one platform.",
-              },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="bg-card border border-border rounded-2xl p-4 hover:border-primary/20 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-3">
-                  <Icon size={18} className="text-emerald-600" />
+          {/* Desktop: full section. Mobile: compact link. */}
+          <div className="hidden md:block">
+            <div className="text-center mb-5">
+              <p className="text-[10px] text-primary uppercase tracking-[0.15em] font-bold">Why EstateFund</p>
+              <h2 className="text-lg font-bold text-foreground mt-1.5">A Platform Built for Property Investors</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                Everything you need to explore, invest and track real estate opportunities.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { icon: Building2, title: "Property-Focused", desc: "Explore real estate opportunities across residential, commercial and hospitality categories." },
+                { icon: Eye, title: "Transparent Terms", desc: "See minimum investment, projected return, funding progress and duration before investing." },
+                { icon: CircleCheck, title: "Structured Investments", desc: "Each investment has its own start date, maturity date and projected return rate." },
+                { icon: Shield, title: "Secure Account", desc: "Manage your wallet, investments and account verification from one platform." },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="bg-card border border-border rounded-2xl p-4 hover:border-primary/20 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-3">
+                    <Icon size={18} className="text-emerald-600" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">{title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
                 </div>
-                <h3 className="text-sm font-semibold text-foreground mb-1">{title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+          {/* Mobile: compact summary with link */}
+          <Link href="/about" className="block md:hidden bg-card border border-border rounded-2xl p-4 hover:border-primary/20 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <Building2 size={18} className="text-emerald-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Why EstateFund</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Property-focused · Transparent terms · Structured returns · Secure</p>
+              </div>
+              <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+            </div>
+          </Link>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
-           F. HOW ESTATEFUND WORKS — STEPS
+           F. HOW ESTATEFUND WORKS — Compact on mobile, full on desktop
            ═══════════════════════════════════════════════════════════════ */}
         <div className="animate-fade-in">
-          <div className="text-center mb-5">
-            <p className="text-[10px] text-primary uppercase tracking-[0.15em] font-bold">How It Works</p>
-            <h2 className="text-lg font-bold text-foreground mt-1.5">Start Investing in Minutes</h2>
+          {/* Desktop: full section */}
+          <div className="hidden md:block">
+            <div className="text-center mb-5">
+              <p className="text-[10px] text-primary uppercase tracking-[0.15em] font-bold">How It Works</p>
+              <h2 className="text-lg font-bold text-foreground mt-1.5">Start Investing in Minutes</h2>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { step: "01", title: "Fund Your Wallet", desc: "Add funds to your EstateFund wallet to get started." },
+                { step: "02", title: "Choose a Property", desc: "Explore available opportunities and review the investment terms." },
+                { step: "03", title: "Invest", desc: "Choose your investment amount and confirm your commitment." },
+                { step: "04", title: "Track Your Investment", desc: "Monitor your property investment, earnings and maturity date." },
+              ].map(({ step, title, desc }) => (
+                <div key={step} className="bg-card border border-border rounded-2xl p-4 relative">
+                  <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">{step}</span>
+                  <h3 className="text-sm font-semibold text-foreground mt-2 mb-1">{title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              {
-                step: "01",
-                title: "Fund Your Wallet",
-                desc: "Add funds to your EstateFund wallet to get started.",
-              },
-              {
-                step: "02",
-                title: "Choose a Property",
-                desc: "Explore available opportunities and review the investment terms.",
-              },
-              {
-                step: "03",
-                title: "Invest",
-                desc: "Choose your investment amount and confirm your commitment.",
-              },
-              {
-                step: "04",
-                title: "Track Your Investment",
-                desc: "Monitor your property investment, earnings and maturity date.",
-              },
-            ].map(({ step, title, desc }) => (
-              <div key={step} className="bg-card border border-border rounded-2xl p-4 relative">
-                <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">{step}</span>
-                <h3 className="text-sm font-semibold text-foreground mt-2 mb-1">{title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+          {/* Mobile: compact summary with link */}
+          <Link href="/how-it-works" className="block md:hidden bg-card border border-border rounded-2xl p-4 hover:border-primary/20 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="text-xs font-bold text-primary">01→04</span>
               </div>
-            ))}
-          </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">How It Works</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Fund · Choose · Invest · Track — start in minutes</p>
+              </div>
+              <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+            </div>
+          </Link>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════

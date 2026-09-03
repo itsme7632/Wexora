@@ -169,22 +169,22 @@ export default function InvestmentsPage() {
 
   return (
     <AppLayout fullBleed>
-      <div className="max-w-6xl mx-auto px-4 py-5 lg:px-8 space-y-5 pb-28">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-5 lg:px-8 space-y-4 md:space-y-5 pb-28">
 
         {/* ── Hero ────────────────────────────────────────────── */}
-        <div className="v3-gradient rounded-2xl p-6 md:p-8 text-white animate-fade-in">
-          <p className="text-[10px] text-white/40 uppercase tracking-[0.15em] font-bold">Real Estate Investments</p>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mt-2">Property Marketplace</h1>
-          <p className="text-white/50 text-sm mt-1 max-w-lg">Browse curated real estate investment opportunities. Invest in premium properties and earn returns.</p>
-          <div className="grid grid-cols-3 gap-3 mt-5 max-w-md">
+        <div className="v3-gradient rounded-2xl p-4 md:p-8 text-white animate-fade-in">
+          <p className="text-[9px] md:text-[10px] text-white/40 uppercase tracking-[0.15em] font-bold">Real Estate Investments</p>
+          <h1 className="text-xl md:text-3xl font-bold tracking-tight mt-1.5 md:mt-2">Property Marketplace</h1>
+          <p className="text-white/50 text-xs md:text-sm mt-1 max-w-lg hidden md:block">Browse curated real estate investment opportunities. Invest in premium properties and earn returns.</p>
+          <div className="grid grid-cols-3 gap-2 md:gap-3 mt-3 md:mt-5 max-w-md">
             {[
               { val: String(metrics?.activeOpportunities ?? activePlans.length), lbl: "Properties" },
               { val: (metrics?.totalParticipants ?? 0).toLocaleString(), lbl: "Investors" },
               { val: `${Math.round(metrics?.fundingPercentage ?? 0)}%`, lbl: "Avg. Funded" },
             ].map(({ val, lbl }) => (
-              <div key={lbl} className="bg-white/10 rounded-xl py-3 text-center backdrop-blur-sm">
-                <p className="font-bold text-lg tabular-nums">{val}</p>
-                <p className="text-[9px] text-white/45 mt-0.5">{lbl}</p>
+              <div key={lbl} className="bg-white/10 rounded-xl py-2 md:py-3 text-center backdrop-blur-sm">
+                <p className="font-bold text-sm md:text-lg tabular-nums">{val}</p>
+                <p className="text-[8px] md:text-[9px] text-white/45 mt-0.5">{lbl}</p>
               </div>
             ))}
           </div>
@@ -371,18 +371,18 @@ export default function InvestmentsPage() {
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 inline-block" />Active
                           </Badge>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 mb-3">
-                          {[
-                            { label: "Invested", val: formatUSDT(inv.amount), cls: "text-foreground" },
-                            { label: "Current Value", val: formatUSDT(currentValue), cls: "text-primary" },
-                            { label: "Earnings", val: formatUSDT(inv.pendingEarnings), cls: "text-emerald-500" },
-                          ].map(({ label, val, cls }) => (
-                            <div key={label} className="v3-card-sunken p-2 text-center">
-                              <p className="text-[9px] text-muted-foreground">{label}</p>
-                              <p className={cn("text-xs font-bold tabular-nums mt-0.5", cls)}>{val}</p>
-                            </div>
-                          ))}
-                        </div>
+                <div className="grid grid-cols-3 gap-1.5 md:gap-2 mb-3">
+                  {[
+                    { label: "Invested", val: formatUSDT(inv.amount), cls: "text-foreground" },
+                    { label: "Current Value", val: formatUSDT(currentValue), cls: "text-primary" },
+                    { label: "Earnings", val: formatUSDT(inv.pendingEarnings), cls: "text-emerald-500" },
+                  ].map(({ label, val, cls }) => (
+                    <div key={label} className="v3-card-sunken p-1.5 md:p-2 text-center">
+                      <p className="text-[8px] md:text-[9px] text-muted-foreground">{label}</p>
+                      <p className={cn("text-[11px] md:text-xs font-bold tabular-nums mt-0.5", cls)}>{val}</p>
+                    </div>
+                  ))}
+                </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                             <Calendar size={11} />
@@ -440,7 +440,7 @@ function PropertyCard({ plan, stats, onClick, featured }: { plan: any; stats: an
       onClick={onClick}
     >
       {/* Property Image */}
-      <div className="relative h-48 overflow-hidden bg-muted">
+      <div className="relative h-40 md:h-48 overflow-hidden bg-muted">
         {primaryImage ? (
           <img
             src={primaryImage}

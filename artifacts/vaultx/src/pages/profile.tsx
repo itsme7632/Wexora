@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
   return (
     <AppLayout fullBleed>
-      <div className="max-w-6xl mx-auto px-4 py-4 lg:px-8 pb-28 space-y-5">
+      <div className="max-w-6xl mx-auto px-4 py-4 lg:px-8 pb-28 space-y-4 md:space-y-5">
 
         {/* ══════════════════════════════════════════════════════════
            A. PROFILE IDENTITY HERO — Full-width with 2-col inner layout
@@ -78,35 +78,35 @@ export default function ProfilePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600" />
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wOCI+PHBhdGggZD0iTTM2IDM0djZoNnYtNmgtNnptMC0zMHY2aDZ2LTZoLTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-40" />
 
-          <div className="relative px-5 py-6 lg:px-8 lg:py-8">
-            {/* Desktop: horizontal layout. Mobile: stacked. */}
-            <div className="flex flex-col lg:flex-row lg:items-center gap-5">
+          <div className="relative px-4 py-5 lg:px-8 lg:py-8">
+            {/* Mobile: stacked centered. Desktop: horizontal. */}
+            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:text-left gap-4 lg:gap-5">
 
-              {/* Left: Avatar + Identity */}
-              <div className="flex items-center gap-4 lg:flex-1">
-                <div className="relative shrink-0">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 border-[3px] border-emerald-800/40 flex items-center justify-center shadow-lg">
-                    <span className="text-white text-xl lg:text-2xl font-bold">{initials}</span>
-                  </div>
-                  {user?.isAdmin && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center border-2 border-card shadow-sm">
-                      <span className="text-[9px] font-bold text-white">A</span>
-                    </div>
-                  )}
+              {/* Avatar — centered on mobile, left on desktop */}
+              <div className="relative shrink-0">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 border-[3px] border-emerald-800/40 flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xl lg:text-2xl font-bold">{initials}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-xl lg:text-2xl font-bold text-white leading-tight">{user?.fullName || "EstateFund Member"}</h1>
-                  <p className="text-xs text-white/60 mt-0.5">@{user?.username}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5 text-xs text-white/60">
-                    <Mail size={12} className="text-white/40" />
-                    <span>{user?.email}</span>
+                {user?.isAdmin && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center border-2 border-card shadow-sm">
+                    <span className="text-[9px] font-bold text-white">A</span>
                   </div>
+                )}
+              </div>
+
+              {/* Identity info — centered on mobile, left on desktop */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl lg:text-2xl font-bold text-white leading-tight">{user?.fullName || "EstateFund Member"}</h1>
+                <p className="text-xs text-white/60 mt-0.5">@{user?.username}</p>
+                <div className="flex items-center justify-center lg:justify-start gap-1.5 mt-1 text-xs text-white/60">
+                  <Mail size={12} className="text-white/40" />
+                  <span className="truncate max-w-[200px]">{user?.email}</span>
                 </div>
               </div>
 
-              {/* Right: Badges + Edit + Member Since */}
-              <div className="flex flex-col items-start lg:items-end gap-3">
-                <div className="flex items-center gap-2 flex-wrap">
+              {/* Badges + Member Since + Edit — centered on mobile */}
+              <div className="flex flex-col items-center lg:items-end gap-2.5">
+                <div className="flex items-center gap-2 flex-wrap justify-center">
                   {kycEnabled && (
                     <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border", kyc.color)}>
                       <KycIcon size={12} /> {kyc.label}

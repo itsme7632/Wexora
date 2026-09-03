@@ -62,7 +62,7 @@ export default function SettingsPage() {
 
   return (
     <AppLayout fullBleed>
-      <div className="max-w-3xl mx-auto px-4 py-6 lg:px-8 pb-28 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-4 md:py-6 lg:px-8 pb-28 space-y-4 md:space-y-6">
 
         {/* ══════════════════════════════════════════════════════════
            SETTINGS HEADER
