@@ -199,7 +199,7 @@ router.get("/referrals/community", requireAuth, async (req, res): Promise<void> 
     const HYBRID_INFLATION_THRESHOLD = 50;
     if (realTotal > 0 && DEMO_STATS.communityReferrals / realTotal > HYBRID_INFLATION_THRESHOLD) {
       console.warn(
-        `[Wexora Referral Audit] Hybrid mode: demo data (${DEMO_STATS.communityReferrals}) is ` +
+        `[EstateFund Referral Audit] Hybrid mode: demo data (${DEMO_STATS.communityReferrals}) is ` +
         `${HYBRID_INFLATION_THRESHOLD}x+ larger than real referrals (${realTotal}). ` +
         `Consider switching to "disabled" mode once real data grows.`
       );
@@ -428,7 +428,7 @@ router.get("/referrals/history", requireAuth, async (req, res): Promise<void> =>
   const refTotal = referrals.reduce((a, r) => a + parseFloat(r.ref.commissionAmount), 0);
   if (Math.abs(txTotal - refTotal) > 0.01) {
     console.warn(
-      `[Wexora Referral Audit] User #${req.session.userId}: ` +
+      `[EstateFund Referral Audit] User #${req.session.userId}: ` +
       `transaction total (${txTotal.toFixed(4)}) differs from referral commission total (${refTotal.toFixed(4)}). ` +
       `This may indicate pending commissions not yet reflected in transactions.`
     );

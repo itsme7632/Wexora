@@ -445,7 +445,7 @@ async function seedPlatformSettings(db: ReturnType<typeof drizzle<typeof schema>
     { key: "platform_name", value: "EstateFund" },
     { key: "platform_tagline", value: "Real Estate Investment Platform" },
     { key: "platform_description", value: "EstateFund is a secure real estate investment platform providing access to premium property investment opportunities. Join thousands of investors building their portfolios worldwide." },
-    { key: "support_email", value: "support@wexoraglobal.com" },
+    { key: "support_email", value: "support@estatefund.com" },
     { key: "support_whatsapp", value: "+1 (800) 555-0100" },
     { key: "support_telegram", value: "@EstateFund" },
     { key: "support_response_time", value: "Within 24 hours" },
@@ -464,7 +464,7 @@ async function seedPlatformSettings(db: ReturnType<typeof drizzle<typeof schema>
     { key: "kyc_required_for_withdrawal", value: "false" },
     { key: "kyc_enabled", value: "true" },
     { key: "max_withdrawal_per_day", value: "50000" },
-    { key: "admin_email", value: "admin@wexoraglobal.com" },
+    { key: "admin_email", value: "admin@estatefund.com" },
     { key: "site_url", value: "https://estatefund.com" },
     { key: "withdrawal_processing_time", value: "24–48 hours" },
     { key: "deposit_confirmation_blocks", value: "6" },
@@ -486,87 +486,76 @@ async function seedNews(db: ReturnType<typeof drizzle<typeof schema>>) {
 
   await db.insert(newsPostsTable).values([
     {
-      title: "Welcome to Wexora — Your Trusted Crypto Investment Platform",
-      content: `We're thrilled to welcome you to Wexora, the next-generation crypto investment platform designed to help you grow your wealth with confidence.
+      title: "Welcome to EstateFund — Your Real Estate Investment Platform",
+      content: `We're thrilled to welcome you to EstateFund, a real estate investment platform designed to help you build wealth through carefully curated property opportunities.
 
-**What is Wexora?**
-Wexora is a secure, transparent crypto investment platform that delivers consistent daily returns of 1.3%–1.7% through our proprietary trading algorithms and market strategies.
+**What is EstateFund?**
+EstateFund connects individual investors with real estate property opportunities across residential, commercial, hospitality and mixed-use markets. Each property includes clear investment terms, projected return ranges, and defined durations.
 
-**Why choose Wexora?**
-- **Daily ROI**: Earn 1.3%–1.7% every single day on your invested capital
-- **Multiple Opportunities**: Choose from five curated investment opportunities
-- **Instant Deposits**: Multiple crypto networks accepted (USDT TRC20, ERC20, BTC, ETH, BNB)
-- **Fast Withdrawals**: Processed within 24–48 hours
-- **Referral Program**: Earn 5% commission on your referrals' profits
-- **24/7 Support**: Our team is always available to assist you
+**Why choose EstateFund?**
+- **Curated Properties**: Access premium real estate opportunities worldwide
+- **Clear Investment Terms**: Minimum investment, projected returns, and durations are transparent
+- **Real-Time Portfolio Tracking**: Monitor your investments, earnings, and progress from your dashboard
+- **Secure Platform**: Account protection, encrypted connections, and continuous monitoring
 
 **Getting Started**
 1. Create your free account
 2. Complete identity verification (KYC)
-3. Make your first deposit
-4. Choose an investment opportunity
-5. Watch your earnings grow daily!
+3. Fund your wallet
+4. Explore available properties
+5. Invest and track your portfolio!
 
-Start your journey to financial freedom with Wexora today.`,
-      excerpt: "Welcome to Wexora — the secure crypto investment platform delivering 1.3%–1.7% daily ROI. Learn about our opportunities, features, and how to get started.",
+Start your real estate investment journey with EstateFund today.`,
+      excerpt: "Welcome to EstateFund - the real estate investment platform connecting you with curated property opportunities worldwide.",
       category: "announcement",
       isFeatured: true,
       isPublished: true,
       publishedAt: now,
     },
     {
-      title: "Five New Investment Opportunities Launched — Up to 1.7% Daily ROI",
-      content: `We're excited to announce five curated investment opportunities, each designed for a different investor profile.
+      title: "New Properties Added - Residential and Commercial Opportunities Now Live",
+      content: `We've expanded our property catalog with exciting new real estate investment opportunities.
 
-**Investment Opportunities:**
+**Newly Added Properties:**
 
-🔵 **Digital Asset Allocation** (Low Risk)
-- Minimum: $100 | Maximum: $9,999
-- Daily ROI: 1.3%–1.7%
-- Duration: 30 days
+**Skyline Residences** - Dubai Marina, UAE
+Type: Residential | Min: $500 | Duration: 365 days
+Premium waterfront tower with marina views.
 
-🟣 **AI Infrastructure** (Medium Risk) — FEATURED
-- Minimum: $100 | Maximum: $49,999
-- Daily ROI: 1.3%–1.7%
-- Duration: 45 days
+**The Meridian Tower** - Canary Wharf, London, UK
+Type: Commercial | Min: $1,000 | Duration: 730 days
+Grade A office tower in a prime financial district.
 
-🟢 **Technology Expansion** (Medium Risk) — TRENDING
-- Minimum: $100 | Maximum: $99,999
-- Daily ROI: 1.3%–1.7%
-- Duration: 60 days
+**Villa Serenata** - Seminyak, Bali, Indonesia
+Type: Hospitality | Min: $250 | Duration: 180 days
+Boutique villa generating luxury vacation rental income.
 
-🩵 **Market Liquidity Program** (Low Risk) — FUNDING
-- Minimum: $100 | Maximum: $24,999
-- Daily ROI: 1.3%–1.7%
-- Duration: 30 days
+**Oakwood Promenade** - Upper West Side, New York, USA
+Type: Mixed-Use | Min: $1,000 | Duration: 540 days
+Ground-floor retail with luxury residential units.
 
-🏆 **Strategic Growth Allocation** (High Returns)
-- Minimum: $100 | Maximum: $500,000
-- Daily ROI: 1.3%–1.7%
-- Duration: 90 days
-
-Invest wisely, invest with Wexora.`,
-      excerpt: "Wexora launches five curated investment opportunities with up to 1.7% daily ROI and auto-compounding support.",
+Each property includes a funding progress tracker, projected return range, and clear investment duration. Review all terms before investing.`,
+      excerpt: "EstateFund expands its property catalog with new residential, commercial, and hospitality real estate investment opportunities.",
       category: "investment",
       isFeatured: false,
       isPublished: true,
       publishedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
     },
     {
-      title: "Crypto Market Update — Bitcoin Surges as Institutional Demand Grows",
-      content: `The cryptocurrency market has seen significant positive momentum this week, with Bitcoin leading the charge amid growing institutional interest.
+      title: "Real Estate Market Update - Global Property Investment Trends",
+      content: `The global real estate market continues to present compelling investment opportunities across multiple sectors.
 
 **Market Highlights:**
-- Bitcoin (BTC) up 8.3% this week, approaching key resistance levels
-- Ethereum (ETH) gains 6.1% following positive network upgrade news
-- USDT remains stable, continuing its role as the preferred stable store of value
-- BNB up 4.7% as Binance Smart Chain DeFi activity increases
+- Residential property demand remains strong in major urban centers worldwide
+- Commercial office space in prime financial districts shows renewed investor interest
+- Hospitality and vacation rental properties are benefiting from increased global travel
+- Mixed-use developments in established neighborhoods continue to attract institutional capital
 
-**What This Means for Wexora Investors**
-Our trading algorithms are designed to profit from market volatility in both directions. Whether markets are rising or falling, our strategies continue to generate the consistent returns our investors expect.
+**What This Means for EstateFund Investors**
+Our property catalog is carefully curated to reflect current market conditions. Whether you prefer the stability of residential properties or the growth potential of commercial real estate, our platform provides the transparency you need to make informed investment decisions.
 
-Stay informed, stay invested. The Wexora team is working around the clock to ensure your investments continue to perform.`,
-      excerpt: "Bitcoin surges 8.3% this week as institutional demand grows. See how market movements affect Wexora's investment strategies.",
+Stay informed, stay invested. The EstateFund team monitors market trends to ensure our property offerings reflect current opportunities.`,
+      excerpt: "Global real estate market trends and what they mean for EstateFund investors.",
       category: "market",
       isFeatured: false,
       isPublished: true,
@@ -574,7 +563,7 @@ Stay informed, stay invested. The Wexora team is working around the clock to ens
     },
     {
       title: "Security Update: Enhanced 2FA and Account Protection",
-      content: `Your security is our top priority. We've implemented several new security features to better protect your Wexora account and funds.
+      content: `Your security is our top priority. We've implemented several new security features to better protect your EstateFund account and funds.
 
 **New Security Features:**
 
@@ -593,8 +582,8 @@ We track and log all login attempts and flag suspicious activity automatically.
 3. Never share your login credentials
 4. Always log out on shared devices
 
-If you notice any suspicious activity, contact our support team immediately at support@wexoraglobal.com.`,
-      excerpt: "Wexora launches enhanced security features including improved 2FA, withdrawal locks, IP monitoring, and real-time email alerts.",
+If you notice any suspicious activity, contact our support team immediately at support@estatefund.com.`,
+      excerpt: "EstateFund launches enhanced security features including improved 2FA, withdrawal locks, IP monitoring, and real-time email alerts.",
       category: "security",
       isFeatured: false,
       isPublished: true,
@@ -606,7 +595,7 @@ If you notice any suspicious activity, contact our support team immediately at s
 }
 
 async function ensureAdminAccount(db: ReturnType<typeof drizzle<typeof schema>>) {
-  const ADMIN_EMAIL = "admin@wexoraglobal.com";
+  const ADMIN_EMAIL = "admin@estatefund.com";
   const ADMIN_PASSWORD = "Admin123@";
 
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
@@ -634,11 +623,11 @@ async function ensureAdminAccount(db: ReturnType<typeof drizzle<typeof schema>>)
       .values({ userId: existing.id })
       .onConflictDoNothing();
 
-    console.log("[seed] Admin account verified/updated ✓ (admin@wexoraglobal.com / Admin123@)");
+    console.log("[seed] Admin account verified/updated ✓ (admin@estatefund.com / Admin123@)");
     return;
   }
 
-  const candidateUsernames = ["admin", "wexoraadmin", "superadmin", "admin_wx"];
+  const candidateUsernames = ["admin", "efadmin", "superadmin", "admin_ef"];
   let chosenUsername = "admin_wx";
   for (const candidate of candidateUsernames) {
     const [taken] = await db
@@ -663,13 +652,13 @@ async function ensureAdminAccount(db: ReturnType<typeof drizzle<typeof schema>>)
     if (!taken) { displayId = candidate; break; }
   }
 
-  let referralCode = "WXADMIN01";
+  let referralCode = "EFADMIN01";
   const [refTaken] = await db
     .select({ id: usersTable.id })
     .from(usersTable)
     .where(eq(usersTable.referralCode, referralCode))
     .limit(1);
-  if (refTaken) referralCode = "WXADMIN" + Date.now().toString().slice(-4);
+  if (refTaken) referralCode = "EFADMIN" + Date.now().toString().slice(-4);
 
   const [admin] = await db
     .insert(usersTable)
@@ -702,7 +691,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
     .from(usersTable)
     .where(
       or(
-        eq(usersTable.email, "demo@wexoraglobal.com"),
+        eq(usersTable.email, "demo@estatefund.com"),
         eq(usersTable.username, "alexj"),
         eq(usersTable.displayId, "100042"),
         eq(usersTable.referralCode, "ALEXJ42"),
@@ -722,7 +711,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       displayId: "100042",
       fullName: "Alex Johnson",
       username: "alexj",
-      email: "demo@wexoraglobal.com",
+      email: "demo@estatefund.com",
       passwordHash,
       referralCode: "ALEXJ42",
       kycStatus: "approved",
@@ -905,7 +894,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
     },
   ]);
 
-  console.log("[seed] Demo user seeded ✓ (demo@wexoraglobal.com / Demo@12345)");
+  console.log("[seed] Demo user seeded ✓ (demo@estatefund.com / Demo@12345)");
 }
 
 async function ensureSalarySettings(db: ReturnType<typeof drizzle<typeof schema>>) {

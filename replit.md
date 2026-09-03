@@ -1,6 +1,6 @@
-# Wexora Global — Crypto Investment Platform
+# EstateFund — Real Estate Investment Platform
 
-A premium light-theme mobile-first crypto investment platform where users can invest, earn daily returns, manage wallets, refer friends, and track portfolio performance.
+A premium light-theme mobile-first real estate investment platform where users can invest in curated property opportunities, track portfolio performance, and manage their accounts.
 
 ## Run & Operate
 
@@ -59,7 +59,7 @@ A premium light-theme mobile-first crypto investment platform where users can in
 - Premium fintech look inspired by Coinbase/Revolut: light theme, blue primary, emerald accent
 - Mobile-first, max-width `screen-sm` centered layout
 - No sidebar — bottom nav only
-- Test admin: email `admin@wexoraglobal.com`, password `Admin123@`
+- Test admin: email `admin@estatefund.com`, password `Admin123@`
 
 ## Gotchas
 
