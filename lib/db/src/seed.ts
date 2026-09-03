@@ -761,16 +761,17 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
     { userId: demo.id, network: "BSC", address: "0x742d35Cc6634C0532925a3b8D4C9F7f4b62Ee8E" },
   ]);
 
+  // Look up current real-estate property names (may have been migrated from old crypto names)
   const [plan1] = await db
     .select()
     .from(investmentPlansTable)
-    .where(eq(investmentPlansTable.name, "Digital Asset Allocation"))
+    .where(eq(investmentPlansTable.name, "Skyline Residences"))
     .limit(1);
 
   const [plan2] = await db
     .select()
     .from(investmentPlansTable)
-    .where(eq(investmentPlansTable.name, "AI Infrastructure"))
+    .where(eq(investmentPlansTable.name, "The Meridian Tower"))
     .limit(1);
 
   if (plan1 && plan2) {
@@ -833,7 +834,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "investment",
       amount: "2000.00000000",
       status: "completed",
-      note: `Invested 2000 USDT in Digital Asset Allocation`,
+      note: `Invested 2000 USDT in Skyline Residences`,
       createdAt: new Date(thirtyDaysAgo.getTime() + 3 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -841,7 +842,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "investment",
       amount: "5000.00000000",
       status: "completed",
-      note: `Invested 5000 USDT in AI Infrastructure`,
+      note: `Invested 5000 USDT in The Meridian Tower`,
       createdAt: new Date(thirtyDaysAgo.getTime() + 3 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -849,7 +850,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "earning",
       amount: "55.00000000",
       status: "completed",
-      note: "Daily ROI 1.5% from Digital Asset Allocation",
+      note: "Daily ROI from Skyline Residences",
       createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -857,7 +858,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "earning",
       amount: "142.50000000",
       status: "completed",
-      note: "Daily ROI 1.5% from AI Infrastructure",
+      note: "Daily ROI from The Meridian Tower",
       createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -885,21 +886,21 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       userId: demo.id,
       type: "investment",
       title: "Investment Started",
-      message: "Your 2000 USDT investment in Digital Asset Allocation has started. Expected daily ROI: 1.5%",
+      message: "Your 2000 USDT investment in Skyline Residences is now active.",
       isRead: true,
     },
     {
       userId: demo.id,
       type: "earning",
-      title: "Daily ROI Credited",
-      message: "+30.00 USDT (1.5% ROI) credited to your AI Infrastructure investment.",
+      title: "Daily Earnings Credited",
+      message: "Daily earnings credited to your Skyline Residences investment.",
       isRead: false,
     },
     {
       userId: demo.id,
       type: "announcement",
-      title: "Welcome to Wexora!",
-      message: "Thank you for joining Wexora. Your account is fully verified. Start investing today and earn daily returns of 1.3%–1.7%.",
+      title: "Welcome to EstateFund",
+      message: "Thank you for joining EstateFund. Your account is fully verified. Start investing in premium real estate properties today.",
       isRead: false,
     },
   ]);
