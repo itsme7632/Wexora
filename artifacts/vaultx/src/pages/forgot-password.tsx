@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, Mail, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Mail, ArrowRight, CheckCircle2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AuthLayout } from "@/components/AuthLayout";
 
 async function postJson(url: string, body: object) {
   const res = await fetch(url, {
@@ -38,78 +39,77 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <img src="/wx-logo.png" alt="Wexora" className="w-14 h-14 rounded-2xl mx-auto mb-4 shadow-lg object-cover" />
-          <h1 className="text-2xl font-bold text-foreground">Forgot password?</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {sent ? "Check your inbox" : "Enter your email and we'll send a reset link"}
-          </p>
-        </div>
+    <AuthLayout
+      title={sent ? "Check your email" : "Reset your password"}
+      subtitle={sent ? "We've sent a reset link to your email address" : "Enter your email and we'll send you a password reset link"}
+    >
+      {sent ? (
+        <div className="space-y-5">
+          <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+          </div>
 
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
-          {sent ? (
-            <div className="text-center space-y-4">
-              <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-7 h-7 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground mb-1">Reset link sent</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  If an account exists for <span className="font-medium text-foreground">{email}</span>,
-                  you'll receive a password reset link shortly. The link expires in 30 minutes.
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Didn't get it? Check your spam folder or{" "}
-                <button
-                  onClick={() => setSent(false)}
-                  className="text-primary hover:underline font-medium"
-                >
-                  try again
-                </button>
-              </p>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              If an account exists for <span className="font-medium text-foreground">{email}</span>, you'll
+              receive a password reset link shortly. The link expires in 30 minutes.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              onClick={() => setSent(false)}
+              className="w-full h-12 bg-primary hover:bg-primary/90 font-semibold text-sm rounded-xl"
+            >
+              <span className="flex items-center gap-2">Send another link <ArrowRight size={16} /></span>
+            </Button>
+
+            <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft size={14} />
+              Back to sign in
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Email address</label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
+                placeholder="you@example.com"
+                className="pl-10 h-12 bg-muted/30 border-border/60 rounded-xl"
+                autoFocus
+                required
+              />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email address</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
-                    placeholder="you@example.com"
-                    className="pl-9 h-11 bg-muted/40 border-border"
-                    autoFocus
-                    required
-                  />
-                </div>
-                {error && <p className="text-xs text-destructive mt-1.5">{error}</p>}
-              </div>
+            {error && <p className="text-xs text-destructive mt-1.5">{error}</p>}
+          </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-11 bg-primary hover:bg-primary/90 font-semibold text-sm"
-              >
-                {loading ? "Sending…" : (
-                  <span className="flex items-center gap-2">
-                    Send reset link <ArrowRight size={16} />
-                  </span>
-                )}
-              </Button>
-            </form>
-          )}
-        </div>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 bg-primary hover:bg-primary/90 font-semibold text-sm rounded-xl active:scale-[0.98] transition-all"
+          >
+            {loading ? "Sending…" : (
+              <span className="flex items-center gap-2">Send reset link <ArrowRight size={16} /></span>
+            )}
+          </Button>
 
-        <Link href="/login" className="flex items-center justify-center gap-1 text-sm text-muted-foreground mt-5 hover:text-foreground">
-          <ArrowLeft size={14} />
-          Back to login
-        </Link>
-      </div>
-    </div>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+            <Shield size={11} />
+            <span>Secure password reset</span>
+          </div>
+
+          <Link href="/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2 border-t border-border/50">
+            <ArrowLeft size={14} />
+            Back to sign in
+          </Link>
+        </form>
+      )}
+    </AuthLayout>
   );
 }

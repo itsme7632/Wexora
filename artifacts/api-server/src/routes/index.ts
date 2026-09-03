@@ -21,9 +21,9 @@ import aboutRouter from "./about";
 import faqRouter from "./faq";
 import platformMetricsRouter from "./platform-metrics";
 import securityRouter from "./security";
-import communityRouter from "./community";
 import announcementsRouter from "./announcements";
 import backupRouter from "./backup";
+import propertyImagesRouter from "./property-images";
 
 const router: IRouter = Router();
 
@@ -49,8 +49,8 @@ router.use(aboutRouter);
 router.use(faqRouter);
 router.use(platformMetricsRouter);
 router.use(securityRouter);
-router.use(communityRouter);
 router.use(announcementsRouter);
 router.use(backupRouter);
+router.use(propertyImagesRouter);
 
 export default router;

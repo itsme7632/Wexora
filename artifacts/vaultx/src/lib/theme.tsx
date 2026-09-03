@@ -16,21 +16,28 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 function getInitialTheme(): Theme {
   try {
-    const stored = localStorage.getItem("wexora-theme");
+    const stored = localStorage.getItem("estatefund-theme") || localStorage.getItem("wexora-theme");
     if (stored === "dark" || stored === "light") return stored;
   } catch {}
   return "light";
 }
 
-function applyTheme(theme: Theme) {
+function applyTheme(theme: Theme, withTransition = false) {
   const root = document.documentElement;
+
+  if (withTransition) {
+    root.classList.add("theme-transitioning");
+    // Remove after transition completes
+    setTimeout(() => root.classList.remove("theme-transitioning"), 350);
+  }
+
   if (theme === "dark") {
     root.classList.add("dark");
   } else {
     root.classList.remove("dark");
   }
   try {
-    localStorage.setItem("wexora-theme", theme);
+    localStorage.setItem("estatefund-theme", theme);
   } catch {}
 }
 
@@ -38,12 +45,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    applyTheme(theme);
+    applyTheme(theme, false);
   }, [theme]);
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
-    applyTheme(t);
+    applyTheme(t, true);
   };
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");

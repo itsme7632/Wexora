@@ -247,7 +247,7 @@ app.use(express.static(publicDir));
 
 // SPA fallback: any non-API, non-static-file request serves index.html
 // (This lets React Router handle the client-side route)
-app.get("*", (req, res) => {
+app.get("/*path", (req, res) => {
   if (!req.path.startsWith("/api")) {
     res.sendFile(path.join(publicDir, "index.html"));
   }

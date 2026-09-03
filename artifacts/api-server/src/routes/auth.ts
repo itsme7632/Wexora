@@ -19,6 +19,16 @@ import { EmailService } from "../lib/email";
 
 const router: IRouter = Router();
 
+// ── Dev-only: detect if email service is available ────────────────────────────
+// When RESEND_API_KEY is not set, emails are skipped. In non-production environments
+// we auto-verify users so they can test without needing a real email service.
+function isEmailServiceConfigured(): boolean {
+  return !!process.env.RESEND_API_KEY;
+}
+function isDevAutoVerify(): boolean {
+  return !isEmailServiceConfigured() && process.env.NODE_ENV !== "production";
+}
+
 // ── Serialise user (public-facing) ────────────────────────────────────────────
 function serializeUser(user: typeof usersTable.$inferSelect) {
   return {
@@ -231,6 +241,26 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     }
   }
 
+  // ── Dev auto-verify: when no email service, auto-verify and log in ──────
+  if (isDevAutoVerify()) {
+    const [updated] = await db
+      .update(usersTable)
+      .set({
+        emailVerified: true,
+        emailVerificationCode: null,
+        emailVerificationExpires: null,
+      })
+      .where(eq(usersTable.id, user.id))
+      .returning();
+
+    req.session.userId = updated.id;
+    req.session.isAdmin = updated.isAdmin;
+
+    console.log(`[dev-auto-verify] Auto-verified and logged in: ${user.email}`);
+    res.status(201).json({ user: serializeUser(updated) });
+    return;
+  }
+
   // ── Send verification email ───────────────────────────────────────────────
   await EmailService.sendVerificationEmail(user.email, user.fullName, code);
 
@@ -278,7 +308,15 @@ router.post("/auth/verify-email", async (req, res): Promise<void> => {
     return;
   }
 
-  const valid = await bcrypt.compare(String(code).trim(), user.emailVerificationCode);
+  // ── Dev fallback: accept any 6-digit code when email service is down ─────
+  const codeStr = String(code).trim();
+  let valid = false;
+  if (isDevAutoVerify() && /^\d{6}$/.test(codeStr)) {
+    valid = true; // accept any 6-digit code in dev when no email service
+    console.log(`[dev-auto-verify] Accepted dev code for: ${user.email}`);
+  } else {
+    valid = await bcrypt.compare(codeStr, user.emailVerificationCode);
+  }
   if (!valid) {
     res.status(400).json({ error: "Invalid code", message: "Incorrect verification code. Please try again." });
     return;
@@ -380,14 +418,25 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  // ── Block unverified accounts ─────────────────────────────────────────────
+  // ── Block unverified accounts (or auto-verify in dev) ───────────────────
   if (!user.emailVerified) {
-    res.status(403).json({
-      error: "email_not_verified",
-      email: user.email,
-      message: "Please verify your email before signing in.",
-    });
-    return;
+    if (isDevAutoVerify()) {
+      // Dev mode: auto-verify unverified users so they can log in
+      const [updated] = await db
+        .update(usersTable)
+        .set({ emailVerified: true, emailVerificationCode: null, emailVerificationExpires: null })
+        .where(eq(usersTable.id, user.id))
+        .returning();
+      user.emailVerified = true;
+      console.log(`[dev-auto-verify] Auto-verified on login: ${user.email}`);
+    } else {
+      res.status(403).json({
+        error: "email_not_verified",
+        email: user.email,
+        message: "Please verify your email before signing in.",
+      });
+      return;
+    }
   }
 
   await db

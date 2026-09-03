@@ -985,6 +985,11 @@ function serializeAdminPlan(p: typeof investmentPlansTable.$inferSelect, stats?:
     endDate: (p as any).endDate ?? null,
     sortOrder: (p as any).sortOrder ?? 0,
     createdAt: p.createdAt,
+    // ── Real Estate Fields (V4.1) ──────────────────────────────────────
+    propertyType: (p as any).propertyType ?? null,
+    location: (p as any).location ?? null,
+    images: (p as any).images ?? [],
+    fundingDeadline: (p as any).fundingDeadline ?? null,
   };
 }
 
@@ -1031,6 +1036,8 @@ router.post("/admin/plans", requireAdmin, async (req, res): Promise<void> => {
       durationDays, riskLevel, features, isActive, isFeatured, isPopular,
       category, bannerImageUrl, fundingGoal, status, colorTheme, autoCompoundAvailable,
       startDate, endDate, sortOrder, totalParticipantLimit, displayParticipantCount,
+      // V4.1: Real Estate Fields
+      propertyType, location, images, fundingDeadline,
     } = req.body;
 
     if (!name || !description || !minAmount || !maxAmount || !durationDays) {
@@ -1072,6 +1079,11 @@ router.post("/admin/plans", requireAdmin, async (req, res): Promise<void> => {
       sortOrder: sortOrder ?? 0,
       totalParticipantLimit: safeInt(totalParticipantLimit),
       displayParticipantCount: safeInt(displayParticipantCount),
+      // V4.1: Real Estate Fields
+      propertyType: propertyType ?? null,
+      location: location ?? null,
+      images: images ?? [],
+      fundingDeadline: fundingDeadline ? new Date(fundingDeadline) : null,
     } as any).returning();
 
     res.status(201).json(serializeAdminPlan(plan));
@@ -1119,6 +1131,8 @@ router.put("/admin/plans/:id", requireAdmin, async (req, res): Promise<void> => 
       category, bannerImageUrl, fundingGoal, currentFunding, status, colorTheme,
       autoCompoundAvailable, startDate, endDate, sortOrder, totalParticipantLimit,
       displayParticipantCount,
+      // V4.1: Real Estate Fields
+      propertyType, location, images, fundingDeadline,
     } = req.body;
 
     const [existing] = await db.select().from(investmentPlansTable).where(eq(investmentPlansTable.id, id)).limit(1);
@@ -1161,6 +1175,11 @@ router.put("/admin/plans/:id", requireAdmin, async (req, res): Promise<void> => 
       sortOrder: sortOrder !== undefined ? sortOrder : (ex.sortOrder ?? 0),
       totalParticipantLimit: totalParticipantLimit !== undefined ? safeInt(totalParticipantLimit) : (ex.totalParticipantLimit ?? null),
       displayParticipantCount: displayParticipantCount !== undefined ? safeInt(displayParticipantCount) : (ex.displayParticipantCount ?? null),
+      // V4.1: Real Estate Fields
+      propertyType: propertyType !== undefined ? propertyType : (ex.propertyType ?? null),
+      location: location !== undefined ? location : (ex.location ?? null),
+      images: images !== undefined ? images : (ex.images ?? []),
+      fundingDeadline: fundingDeadline !== undefined ? (fundingDeadline ? new Date(fundingDeadline) : null) : (ex.fundingDeadline ?? null),
     } as any).where(eq(investmentPlansTable.id, id)).returning();
 
     res.json(serializeAdminPlan(updated));

@@ -113,10 +113,6 @@ export function AnnouncementPopup() {
 
   const [, navigate] = useLocation();
 
-  const handleViewCommunity = async (announcementId: number) => {
-    await dismiss(announcementId);
-    navigate("/community");
-  };
 
   if (!user || !announcement || !visible) return null;
 
@@ -169,14 +165,6 @@ export function AnnouncementPopup() {
             onClick={() => dismiss(announcement.id)}
           >
             I Understand
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full h-10 text-sm rounded-xl gap-2"
-            onClick={() => handleViewCommunity(announcement.id)}
-          >
-            <MessageSquare size={14} />
-            View Community
           </Button>
           <p className="text-center text-[10px] text-muted-foreground pt-1">
             This message will not be shown again for 24 hours.

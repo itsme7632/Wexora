@@ -48,6 +48,11 @@ export const investmentPlansTable = pgTable("investment_plans", {
   totalParticipantLimit: integer("total_participant_limit"),
   isPopular: boolean("is_popular").notNull().default(false),
   displayParticipantCount: integer("display_participant_count"),
+  // ── Real Estate Fields (V4.1) ──────────────────────────────────────────
+  propertyType: text("property_type"), // "residential" | "commercial" | "land"
+  location: text("location"), // "Dubai, UAE" etc.
+  images: text("images").array(), // Array of image URLs for the property
+  fundingDeadline: timestamp("funding_deadline", { withTimezone: true }), // When new investments close
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -35,18 +35,20 @@ import SecurityPage from "@/pages/security";
 import Setup2FAPage from "@/pages/setup-2fa";
 import KycPage from "@/pages/kyc";
 import SettingsPage from "@/pages/settings";
-import AdminPage from "@/pages/admin";
+import AdminPage from "@/pages/admin/_admin-shell";
 import NewsPage, { NewsArticlePage } from "@/pages/news";
 import SupportPage, { SupportTicketPage } from "@/pages/support";
 import TransactionPage from "@/pages/transaction";
 import NotFound from "@/pages/not-found";
 import AboutPage from "@/pages/about";
+import HowItWorksPage from "@/pages/how-it-works";
+import ReturnsPage from "@/pages/returns";
 import DownloadAppPage from "@/pages/download-app";
 import MorePage from "@/pages/more";
 import PrivacyPolicyPage from "@/pages/privacy";
 import TermsPage from "@/pages/terms";
 import FaqPage from "@/pages/faq";
-import CommunityPage from "@/pages/community";
+
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 
 setBaseUrl(null);
@@ -165,9 +167,7 @@ function Router() {
       <Route path="/referrals">
         <ProtectedRoute><ReferralsPage /></ProtectedRoute>
       </Route>
-      <Route path="/community">
-        <ProtectedRoute><CommunityPage /></ProtectedRoute>
-      </Route>
+
       <Route path="/notifications">
         <ProtectedRoute><NotificationsPage /></ProtectedRoute>
       </Route>
@@ -206,6 +206,12 @@ function Router() {
       </Route>
       <Route path="/about">
         <ProtectedRoute><AboutPage /></ProtectedRoute>
+      </Route>
+      <Route path="/how-it-works">
+        <ProtectedRoute><HowItWorksPage /></ProtectedRoute>
+      </Route>
+      <Route path="/returns">
+        <ProtectedRoute><ReturnsPage /></ProtectedRoute>
       </Route>
       <Route path="/download-app">
         <ProtectedRoute><DownloadAppPage /></ProtectedRoute>

@@ -53,6 +53,11 @@ function serializePlan(p: typeof investmentPlansTable.$inferSelect, stats?: { to
     startDate: (p as any).startDate ?? null,
     endDate: (p as any).endDate ?? null,
     sortOrder: (p as any).sortOrder ?? 0,
+    // ── Real Estate Fields (V4.1) ──────────────────────────────────────
+    propertyType: (p as any).propertyType ?? null,
+    location: (p as any).location ?? null,
+    images: (p as any).images ?? [],
+    fundingDeadline: (p as any).fundingDeadline ?? null,
   };
 }
 
@@ -61,6 +66,13 @@ function computeInvestmentView(
   planName: string,
   planMinRoi?: string,
   planMaxRoi?: string,
+  planExtra?: {
+    location?: string | null;
+    propertyType?: string | null;
+    images?: string[] | null;
+    bannerImageUrl?: string | null;
+    durationDays?: number;
+  },
 ) {
   const now = new Date();
   const start = new Date(inv.startDate);
@@ -110,6 +122,12 @@ function computeInvestmentView(
     projectedDailyMax: parseFloat(projectedDailyMax.toFixed(2)),
     projectedTotalMin: parseFloat(projectedTotalMin.toFixed(2)),
     projectedTotalMax: parseFloat(projectedTotalMax.toFixed(2)),
+    // ── Real Estate Fields (V4.2) ──────────────────────────────────────
+    location: planExtra?.location ?? null,
+    propertyType: planExtra?.propertyType ?? null,
+    images: planExtra?.images ?? [],
+    bannerImageUrl: planExtra?.bannerImageUrl ?? null,
+    durationDays: planExtra?.durationDays ?? Math.round(totalDays),
   };
 }
 
@@ -162,6 +180,10 @@ router.get("/investments", requireAuth, async (req, res): Promise<void> => {
       planName: investmentPlansTable.name,
       planMinRoi: investmentPlansTable.minRoiRate,
       planMaxRoi: investmentPlansTable.maxRoiRate,
+      location: investmentPlansTable.location,
+      propertyType: investmentPlansTable.propertyType,
+      images: investmentPlansTable.images,
+      durationDays: investmentPlansTable.durationDays,
     })
     .from(userInvestmentsTable)
     .leftJoin(investmentPlansTable, eq(userInvestmentsTable.planId, investmentPlansTable.id))
@@ -175,6 +197,12 @@ router.get("/investments", requireAuth, async (req, res): Promise<void> => {
         row.planName ?? "Unknown Plan",
         row.planMinRoi ?? undefined,
         row.planMaxRoi ?? undefined,
+        {
+          location: row.location,
+          propertyType: row.propertyType,
+          images: row.images,
+          durationDays: row.durationDays ?? undefined,
+        },
       ),
     ),
   );
@@ -212,6 +240,14 @@ router.post("/investments", requireAuth, async (req, res): Promise<void> => {
   const now = new Date();
   if ((plan as any).endDate && new Date((plan as any).endDate) < now) {
     res.status(400).json({ error: "Plan expired", message: "This investment opportunity has expired" });
+    return;
+  }
+
+  // V4.1: Check funding deadline — controls whether new investments are accepted
+  // This is separate from the plan's endDate and from each user's individual investment duration
+  const fundingDeadline = (plan as any).fundingDeadline;
+  if (fundingDeadline && new Date(fundingDeadline) < now) {
+    res.status(400).json({ error: "Funding closed", message: "The funding period for this opportunity has ended. No new investments are being accepted." });
     return;
   }
 

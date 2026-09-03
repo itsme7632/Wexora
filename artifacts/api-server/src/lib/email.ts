@@ -1,7 +1,7 @@
 /**
- * EmailService — Wexora Global transactional email via Resend.
+ * EmailService — EstateFund transactional email via Resend.
  *
- * All emails are sent from:  Wexora Global <noreply@mail.wexoraglobal.com>
+ * All emails are sent from:  EstateFund <noreply@mail.wexoraglobal.com>
  *
  * If RESEND_API_KEY is absent the service logs a warning and no-ops every send,
  * so the app starts cleanly in environments without email configured.
@@ -20,7 +20,7 @@ if (apiKey) {
 }
 
 const FROM = process.env.EMAIL_FROM ?? "noreply@mail.wexoraglobal.com";
-const FROM_DISPLAY = `Wexora Global <${FROM}>`;
+const FROM_DISPLAY = `EstateFund <${FROM}>`;
 const SUPPORT_EMAIL = "support@wexoraglobal.com";
 const APP_URL = process.env.APP_URL ?? "https://wexoraglobal.com";
 const LOGO_URL = "https://wexoraglobal.com/wx-logo.png";
@@ -53,7 +53,7 @@ function baseTemplate(title: string, body: string): string {
           <tr>
             <td align="center" style="padding-bottom:32px;">
               <a href="${APP_URL}" style="display:inline-block;text-decoration:none;">
-                <img src="${LOGO_URL}" alt="Wexora Global" width="160" height="auto"
+                <img src="${LOGO_URL}" alt="EstateFund" width="160" height="auto"
                   style="display:block;border:0;max-width:160px;height:auto;" />
               </a>
             </td>
@@ -77,7 +77,7 @@ function baseTemplate(title: string, body: string): string {
                 </tr>
                 <tr>
                   <td align="center" style="padding-bottom:4px;">
-                    <span style="font-size:14px;font-weight:700;color:#cbd5e1;letter-spacing:0.04em;">Wexora Global</span>
+                    <span style="font-size:14px;font-weight:700;color:#cbd5e1;letter-spacing:0.04em;">EstateFund</span>
                   </td>
                 </tr>
                 <tr>
@@ -111,7 +111,7 @@ function baseTemplate(title: string, body: string): string {
                 </tr>
                 <tr>
                   <td align="center">
-                    <span style="font-size:11px;color:#374151;">&copy; Wexora Global. All rights reserved.</span>
+                    <span style="font-size:11px;color:#374151;">&copy; EstateFund. All rights reserved.</span>
                   </td>
                 </tr>
               </table>
@@ -239,25 +239,25 @@ export const EmailService = {
 
   // ── 1. Email Verification (OTP) ───────────────────────────────────────────
   async sendVerificationEmail(to: string, name: string, code: string): Promise<void> {
-    const subject = "Verify your Wexora Global account";
+    const subject = "Verify your EstateFund account";
     const firstName = name.split(" ")[0];
     const body = `
       ${h1("Verify your email address")}
-      ${subtitle(`Hi ${firstName}, welcome to Wexora Global! Use the verification code below to confirm your account.`)}
+      ${subtitle(`Hi ${firstName}, welcome to EstateFund! Use the verification code below to confirm your account.`)}
       ${codeBox(code)}
-      ${alertBox("🔒", "For your security, this code expires in <strong>10 minutes</strong> and can only be used once. Never share this code with anyone — Wexora Global will never ask for it.")}
+      ${alertBox("🔒", "For your security, this code expires in <strong>10 minutes</strong> and can only be used once. Never share this code with anyone — EstateFund will never ask for it.")}
       ${divider()}
-      ${smallNote("If you did not create a Wexora Global account, you can safely ignore this email.")}
+      ${smallNote("If you did not create a EstateFund account, you can safely ignore this email.")}
     `;
     await send(to, subject, baseTemplate(subject, body));
   },
 
   // ── 2. Welcome Email ──────────────────────────────────────────────────────
   async sendWelcome(to: string, name: string, referralCode: string): Promise<void> {
-    const subject = "Welcome to Wexora Global — Your account is ready";
+    const subject = "Welcome to EstateFund — Your account is ready";
     const firstName = name.split(" ")[0];
     const body = `
-      ${h1("Welcome to Wexora Global! 🎉")}
+      ${h1("Welcome to EstateFund! 🎉")}
       ${subtitle(`Hi ${firstName}, your account is verified and you're ready to start investing.`)}
       ${paragraph("You now have full access to our complete suite of investment tools and features:")}
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
@@ -284,12 +284,12 @@ export const EmailService = {
 
   // ── 3. Forgot Password ────────────────────────────────────────────────────
   async sendPasswordReset(to: string, name: string, token: string): Promise<void> {
-    const subject = "Reset your Wexora Global password";
+    const subject = "Reset your EstateFund password";
     const firstName = name.split(" ")[0];
     const resetUrl = `${APP_URL}/reset-password?token=${token}`;
     const body = `
       ${h1("Reset your password")}
-      ${subtitle(`Hi ${firstName}, we received a request to reset the password on your Wexora Global account.`)}
+      ${subtitle(`Hi ${firstName}, we received a request to reset the password on your EstateFund account.`)}
       ${paragraph("Click the button below to set a new password. This link is valid for <strong style='color:#f1f5f9;'>30 minutes</strong> and can only be used once.")}
       ${primaryButton("Reset Password", resetUrl)}
       ${paragraph(`Or copy and paste this link into your browser:`)}
@@ -303,7 +303,7 @@ export const EmailService = {
 
   // ── 4. Password Changed ───────────────────────────────────────────────────
   async sendPasswordChanged(to: string, name: string, time: string, browser?: string, ip?: string): Promise<void> {
-    const subject = "Your Wexora Global password was changed";
+    const subject = "Your EstateFund password was changed";
     const firstName = name.split(" ")[0];
     const rows = [
       infoRow("Event", "Password changed"),
@@ -444,7 +444,7 @@ export const EmailService = {
 
   // ── 11. Investment Completed ──────────────────────────────────────────────
   async sendInvestmentCompleted(to: string, name: string, planName: string, principal: number, totalRoi: number, totalReturned: number): Promise<void> {
-    const subject = "Your investment has matured — Wexora Global";
+    const subject = "Your investment has matured — EstateFund";
     const firstName = name.split(" ")[0];
     const body = `
       ${h1("Investment Matured 🎯")}
@@ -464,7 +464,7 @@ export const EmailService = {
 
   // ── 12. Referral Reward ───────────────────────────────────────────────────
   async sendReferralReward(to: string, name: string, referralName: string, amount: number, level: number): Promise<void> {
-    const subject = "Referral commission earned — Wexora Global";
+    const subject = "Referral commission earned — EstateFund";
     const firstName = name.split(" ")[0];
     const levelLabel = level === 1 ? "Level 1 (Direct)" : level === 2 ? "Level 2" : `Level ${level}`;
     const body = `
@@ -484,17 +484,17 @@ export const EmailService = {
 
   // ── 13. Admin Announcement ────────────────────────────────────────────────
   async sendAdminAnnouncement(to: string, name: string, title: string, content: string): Promise<void> {
-    const subject = `${title} — Wexora Global`;
+    const subject = `${title} — EstateFund`;
     const firstName = name.split(" ")[0];
     const body = `
       ${h1(title)}
-      ${subtitle(`Hi ${firstName}, you have an important announcement from the Wexora Global team.`)}
+      ${subtitle(`Hi ${firstName}, you have an important announcement from the EstateFund team.`)}
       <div style="background:#080f1e;border:1px solid #1e2d47;border-radius:14px;padding:24px 28px;margin:20px 0;">
         <p style="margin:0;font-size:15px;color:#cbd5e1;line-height:1.75;">${content.replace(/\n/g, "<br />")}</p>
       </div>
       ${primaryButton("Go to Dashboard", `${APP_URL}/`)}
       ${divider()}
-      ${smallNote("This announcement was sent to all active Wexora Global members.")}
+      ${smallNote("This announcement was sent to all active EstateFund members.")}
     `;
     await send(to, subject, baseTemplate(subject, body));
   },
@@ -507,7 +507,7 @@ export const EmailService = {
     ip?: string;
     time?: string;
   }): Promise<void> {
-    const subject = "New sign-in detected — Wexora Global";
+    const subject = "New sign-in detected — EstateFund";
     const firstName = name.split(" ")[0];
     const rows = [
       opts.time ? infoRow("Time", opts.time) : infoRow("Time", new Date().toUTCString()),
@@ -518,7 +518,7 @@ export const EmailService = {
     ].filter(Boolean).join("");
     const body = `
       ${h1("New sign-in detected")}
-      ${subtitle(`Hi ${firstName}, a new sign-in to your Wexora Global account was detected.`)}
+      ${subtitle(`Hi ${firstName}, a new sign-in to your EstateFund account was detected.`)}
       ${infoTable(rows)}
       ${alertBox("⚠️", "If this was <strong>you</strong>, no action is needed. If you do not recognize this activity, secure your account immediately — change your password and enable two-factor authentication.", "#f59e0b")}
       ${primaryButton("Secure My Account", `${APP_URL}/security`)}
@@ -534,7 +534,7 @@ export const EmailService = {
 
   // Investment created (active notification)
   async sendInvestmentCreated(to: string, name: string, planName: string, amount: number, dailyRate: number, durationDays: number): Promise<void> {
-    const subject = "Investment confirmed — Wexora Global";
+    const subject = "Investment confirmed — EstateFund";
     const firstName = name.split(" ")[0];
     const body = `
       ${h1("Investment Confirmed ✅")}
@@ -556,12 +556,12 @@ export const EmailService = {
 
   // KYC approved
   async sendKycApproved(to: string, name: string): Promise<void> {
-    const subject = "Identity verified — Wexora Global";
+    const subject = "Identity verified — EstateFund";
     const firstName = name.split(" ")[0];
     const body = `
       ${h1("Identity Verified ✅")}
       ${subtitle(`Hi ${firstName}, your identity has been successfully verified.`)}
-      ${paragraph("You now have full access to all Wexora Global features including increased withdrawal limits and exclusive investment plans.")}
+      ${paragraph("You now have full access to all EstateFund features including increased withdrawal limits and exclusive investment plans.")}
       ${primaryButton("Explore Opportunities", `${APP_URL}/investments`)}
     `;
     await send(to, subject, baseTemplate(subject, body));
@@ -569,7 +569,7 @@ export const EmailService = {
 
   // KYC rejected
   async sendKycRejected(to: string, name: string, reason?: string): Promise<void> {
-    const subject = "KYC verification update — Wexora Global";
+    const subject = "KYC verification update — EstateFund";
     const firstName = name.split(" ")[0];
     const body = `
       ${h1("Verification Unsuccessful")}
@@ -602,7 +602,7 @@ export const EmailService = {
       return EmailService.sendNewLogin(to, name, { ip: detail });
     }
     // email_changed — generic security alert
-    const subject = `Security alert: Email address changed — Wexora Global`;
+    const subject = `Security alert: Email address changed — EstateFund`;
     const firstName = name.split(" ")[0];
     const body = `
       ${h1("⚠️ Email Address Changed")}

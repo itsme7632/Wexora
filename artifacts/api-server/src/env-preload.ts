@@ -20,6 +20,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Compiled output lives at:  artifacts/api-server/dist/env-preload.mjs
 // Workspace root is 3 levels up:  dist → api-server → artifacts → workspace-root
-const envPath = resolve(__dirname, "..", "..", "..", ".env");
+const workspaceRoot = resolve(__dirname, "..", "..", "..");
+const envPath = resolve(workspaceRoot, ".env");
+const envLocalPath = resolve(workspaceRoot, ".env.local");
 
+// Load .env first, then .env.local (local overrides)
 config({ path: envPath, override: false });
+config({ path: envLocalPath, override: false });

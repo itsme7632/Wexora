@@ -1,195 +1,77 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "wouter";
-import {
-  Bell, User, Shield, Settings, LayoutDashboard, LogOut,
-  ChevronRight, Download, HeadphonesIcon, Sun, Moon, Users,
-} from "lucide-react";
+import { useState, useCallback } from "react";
+import { Bell, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { useLogout, useGetNotifications, getGetNotificationsQueryKey } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { playNotificationSound } from "@/lib/notificationSound";
+import { useQuery } from "@tanstack/react-query";
+import { HamburgerButton } from "@/components/Sidebar";
 import { NotificationPanel } from "@/components/NotificationPanel";
-import wxLogo from "/wx-logo.png";
 
-export function TopBar({ title }: { title?: string }) {
-  const { user } = useAuth();
+interface TopBarProps {
+  onMenuOpen?: () => void;
+}
+
+export function TopBar({ onMenuOpen }: TopBarProps) {
   const { theme, toggleTheme } = useTheme();
-  const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const logout = useLogout();
-  const prevUnreadRef = useRef<number | null>(null);
-  const prevNotifIdsRef = useRef<Set<number>>(new Set());
-  const [panelOpen, setPanelOpen] = useState(false);
-  const bellRef = useRef<HTMLButtonElement>(null);
-  const notifWrapRef = useRef<HTMLDivElement>(null);
+  const [notifOpen, setNotifOpen] = useState(false);
 
-  const { data: notifications } = useGetNotifications({
-    query: {
-      queryKey: getGetNotificationsQueryKey(),
-      staleTime: 20000,
-      refetchInterval: 30000,
-    },
+  const { data: notifData } = useQuery({
+    queryKey: ["notifications-unread-count"],
+    queryFn: () =>
+      fetch("/api/notifications?limit=1", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 30000,
+    refetchInterval: 60000,
   });
 
-  const unreadCount = notifications?.unreadCount ?? 0;
-  const notifList: any[] = notifications?.items ?? [];
+  const unreadCount: number = notifData?.unreadCount ?? 0;
 
-  useEffect(() => {
-    if (prevUnreadRef.current === null) {
-      prevUnreadRef.current = unreadCount;
-      prevNotifIdsRef.current = new Set(notifList.map((n: any) => n.id));
-      return;
-    }
-
-    if (unreadCount > (prevUnreadRef.current ?? 0)) {
-      const currentIds = new Set(notifList.map((n: any) => n.id));
-      const newNotifs = notifList.filter((n: any) => !prevNotifIdsRef.current.has(n.id));
-      prevNotifIdsRef.current = currentIds;
-
-      const newest = newNotifs[0];
-      const type = newest?.type as string | undefined;
-
-      if (type === "deposit_approved" || type === "deposit") {
-        playNotificationSound("deposit");
-      } else if (type === "withdrawal_approved" || type === "withdrawal") {
-        playNotificationSound("withdrawal");
-      } else if (type === "support_reply" || type === "support") {
-        playNotificationSound("support");
-      } else if (type === "announcement" || type === "community_announcement") {
-        playNotificationSound("announcement");
-      } else {
-        playNotificationSound("notification");
-      }
-    }
-
-    prevUnreadRef.current = unreadCount;
-  }, [unreadCount, notifList]);
-
-  const handleLogout = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => {
-        queryClient.clear();
-        setLocation("/login");
-      },
-    });
-  };
-
-  const initials = user?.fullName
-    ?.split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() ?? "W";
-
-  const menuItems = [
-    { icon: User,            label: "Profile",           href: "/profile" },
-    { icon: Shield,          label: "Security",          href: "/security" },
-    { icon: Users,           label: "Referrals",         href: "/referrals" },
-    { icon: HeadphonesIcon,  label: "Support",           href: "/support" },
-    { icon: Download,        label: "Download App",      href: "/download-app" },
-    { icon: Settings,        label: "Settings",          href: "/settings" },
-    ...(user?.isAdmin ? [{ icon: LayoutDashboard, label: "Admin Panel", href: "/admin" }] : []),
-  ];
+  const toggleNotif = useCallback(() => setNotifOpen((p) => !p), []);
+  const closeNotif = useCallback(() => setNotifOpen(false), []);
 
   return (
-    <header className="topbar-header sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-      <div className="flex items-center justify-between px-4 py-3 max-w-screen-sm mx-auto">
-        <div className="flex items-center gap-2">
-          <img
-            src={wxLogo}
-            alt="Wexora"
-            className="w-7 h-7 rounded-lg object-cover"
-          />
-          <span className="font-bold text-foreground text-base tracking-tight">
-            {title || "Wexora"}
-          </span>
-        </div>
+    <>
+      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <div className="flex items-center justify-between h-14 px-4 lg:px-6">
+          {/* Left: Hamburger (mobile) + Brand (mobile only, desktop brand is in sidebar) */}
+          <div className="flex items-center gap-2">
+            <HamburgerButton onClick={onMenuOpen ?? (() => {})} />
+            <a href="/" className="flex items-center gap-2 lg:hidden">
+              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xs">W</span>
+              </div>
+              <span className="text-sm font-bold text-foreground tracking-tight">Wexora</span>
+            </a>
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={toggleTheme}
-            className="p-1.5 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-
-          {/* Bell + floating panel */}
-          <div ref={notifWrapRef} className="relative">
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1">
+            {/* Theme toggle */}
             <button
-              ref={bellRef}
-              onClick={() => setPanelOpen((v) => !v)}
-              className="relative p-1.5 rounded-xl hover:bg-muted transition-colors"
-              aria-label="Notifications"
-              aria-expanded={panelOpen}
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all active:scale-95"
+              aria-label="Toggle theme"
             >
-              <Bell
-                size={20}
-                className={panelOpen ? "text-primary" : "text-foreground"}
-              />
+              {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+
+            {/* Notifications — floating panel trigger */}
+            <button
+              onClick={toggleNotif}
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all active:scale-95"
+              aria-label="Notifications"
+            >
+              <Bell size={17} />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-destructive rounded-full flex items-center justify-center text-white text-[9px] font-bold">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-1 shadow-sm">
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
             </button>
-
-            <NotificationPanel
-              open={panelOpen}
-              onClose={() => setPanelOpen(false)}
-              anchorRef={bellRef}
-            />
           </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="focus:outline-none ml-0.5">
-                <Avatar className="w-8 h-8 ring-2 ring-primary/20">
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent align="end" className="w-52 shadow-lg border-border bg-card">
-              <div className="px-3 py-2.5">
-                <p className="font-semibold text-sm text-foreground truncate">{user?.fullName}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">@{user?.username}</p>
-              </div>
-              <DropdownMenuSeparator />
-              {menuItems.map(({ icon: Icon, label, href }) => (
-                <DropdownMenuItem
-                  key={href}
-                  className="cursor-pointer"
-                  onClick={() => setLocation(href)}
-                >
-                  <Icon size={15} className="text-muted-foreground mr-2 shrink-0" />
-                  <span className="flex-1">{label}</span>
-                  <ChevronRight size={14} className="text-muted-foreground" />
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer text-destructive focus:text-destructive"
-                onClick={handleLogout}
-              >
-                <LogOut size={15} className="mr-2" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Floating notification panel */}
+      <NotificationPanel open={notifOpen} onClose={closeNotif} />
+    </>
   );
 }
