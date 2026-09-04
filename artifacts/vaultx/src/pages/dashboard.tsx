@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="px-4 md:px-6 pt-4 pb-28 space-y-4 md:space-y-6">
+      <div className="pt-4 pb-28 space-y-4 md:space-y-6">
 
         {/* ═══════════════════════════════════════════════════════════════
            A. PERSONAL PORTFOLIO HERO
@@ -116,13 +116,13 @@ export default function DashboardPage() {
             {summaryLoading ? (
               <Skeleton className="h-9 md:h-11 w-44 md:w-52 bg-white/15 mb-2" />
             ) : (
-              <p className="text-3xl md:text-4xl font-bold tracking-tight tabular-nums">
+              <p className="text-2xl md:text-4xl font-bold tracking-tight tabular-nums">
                 {formatUSDT(summary?.activeInvestmentsValue ?? 0)}
               </p>
             )}
 
             {/* KPI row — 2 cols mobile, 4 cols desktop */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 md:mt-4">
               <div className="bg-white/10 rounded-xl px-2.5 py-2 backdrop-blur-sm">
                 <div className="flex items-center gap-1 mb-0.5">
                   <TrendingUp size={10} className="text-emerald-200" />
@@ -178,7 +178,7 @@ export default function DashboardPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/90 via-emerald-800/80 to-emerald-700/60" />
           </div>
           {/* Mobile: compact. Desktop: full. */}
-          <div className="relative px-4 py-5 md:px-10 md:py-10">
+          <div className="relative px-4 py-4 md:px-10 md:py-10">
             <p className="text-[9px] md:text-[10px] text-emerald-200/60 uppercase tracking-[0.2em] font-bold">EstateFund</p>
             <h2 className="text-lg md:text-2xl font-bold text-white mt-1 md:mt-2 leading-tight max-w-lg">
               Invest in Real Estate, Built for the Future
@@ -201,7 +201,7 @@ export default function DashboardPage() {
            ═══════════════════════════════════════════════════════════════ */}
         {activeInvestments.length > 0 && (
           <div className="animate-fade-in">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                   <Home size={15} className="text-emerald-500" />
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                 return (
                   <Link key={inv.id} href="/portfolio">
                     <div className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group">
-                      <div className="relative h-28 md:h-32 overflow-hidden">
+                      <div className="relative h-24 md:h-32 overflow-hidden">
                         <PropertyImage
                           src={inv.bannerImageUrl || inv.images?.[0]}
                           alt={inv.planName}
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                         )}
                       </div>
 
-                      <div className="p-4">
+                      <div className="p-3 md:p-4">
                         <h3 className="font-semibold text-foreground text-sm mb-2 truncate">{inv.planName}</h3>
 
                         <div className="flex items-center justify-between text-xs mb-2">
@@ -256,7 +256,7 @@ export default function DashboardPage() {
                           <span className="font-semibold text-foreground tabular-nums">{formatUSDT(inv.amount)}</span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs mb-3">
+                        <div className="flex items-center justify-between text-xs mb-2.5">
                           <span className="text-muted-foreground">Pending Earnings</span>
                           <span className="font-semibold text-emerald-500 tabular-nums">+{formatUSDT(inv.pendingEarnings)}</span>
                         </div>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
            ═══════════════════════════════════════════════════════════════ */}
         {featuredPlans.length > 0 && (
           <div className="animate-fade-in">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Sparkles size={15} className="text-primary" />
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                 return (
                   <Link key={plan.id} href={`/opportunity/${plan.id}`}>
                     <div className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group h-full flex flex-col">
-                      <div className="relative h-32 md:h-40 overflow-hidden">
+                      <div className="relative h-28 md:h-40 overflow-hidden">
                         <PropertyImage
                           src={plan.bannerImageUrl || plan.images?.[0]}
                           alt={plan.name}
@@ -357,7 +357,7 @@ export default function DashboardPage() {
                         )}
                       </div>
 
-                      <div className="p-4 flex-1 flex flex-col">
+                      <div className="p-3 md:p-4 flex-1 flex flex-col">
                         <h3 className="font-semibold text-foreground text-sm mb-1 truncate">{plan.name}</h3>
                         {plan.description && (
                           <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{plan.description}</p>

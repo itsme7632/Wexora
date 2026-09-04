@@ -16,10 +16,15 @@ import { Link } from "wouter";
 
 function kycBadge(status: string) {
   switch (status) {
-    case "approved": return { label: "Verified", color: "bg-white/20 text-white border-white/30", icon: CheckCircle };
-    case "pending": return { label: "Pending", color: "bg-amber-400/20 text-amber-100 border-amber-400/30", icon: Shield };
-    case "rejected": return { label: "Rejected", color: "bg-red-400/20 text-red-100 border-red-400/30", icon: Shield };
-    default: return { label: "Unverified", color: "bg-white/10 text-white/60 border-white/20", icon: Shield };
+    case "approved": return {
+      label: "Verified",
+      // Solid emerald — readable on both the gradient header and light cards.
+      color: "bg-emerald-500 text-white border border-emerald-500",
+      icon: CheckCircle,
+    };
+    case "pending": return { label: "Pending", color: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30", icon: Shield };
+    case "rejected": return { label: "Rejected", color: "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30", icon: Shield };
+    default: return { label: "Unverified", color: "bg-muted text-muted-foreground border border-border", icon: Shield };
   }
 }
 

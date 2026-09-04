@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import {
-  Shield, FileCheck, User, Bell, BellOff,
+  FileCheck, User, Bell, BellOff,
   Moon, Sun, Info, BookOpen, HelpCircle,
   LogOut, Settings as SettingsIcon, Palette, TrendingUp, KeyRound,
 } from "lucide-react";
@@ -130,13 +130,6 @@ export default function SettingsPage() {
               label="Password & 2FA"
               description="Change your password and manage two-factor authentication"
               onClick={() => setLocation("/security")}
-            />
-            <SettingsRow
-              icon={Shield}
-              iconColor="bg-gradient-to-br from-violet-500 to-purple-500"
-              label="Identity Verification (KYC)"
-              description="Verify your identity to unlock full account access"
-              onClick={() => setLocation("/kyc")}
             />
           </div>
         </div>

@@ -14,6 +14,16 @@ router.get("/kyc/status", requireAuth, async (req, res): Promise<void> => {
     .limit(1);
 
   if (!submission) {
+    // Fall back to the user-level KYC status (e.g. seeded/pre-verified accounts).
+    const [user] = await db
+      .select({ kycStatus: usersTable.kycStatus })
+      .from(usersTable)
+      .where(eq(usersTable.id, req.session.userId!))
+      .limit(1);
+    if (user?.kycStatus === "approved") {
+      res.json({ status: "approved" });
+      return;
+    }
     res.json({ status: "none" });
     return;
   }
