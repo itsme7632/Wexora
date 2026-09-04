@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   Copy, Check, Clock, CheckCircle,
@@ -128,6 +128,7 @@ function TimelineStep({ icon: Icon, label, time, color, connector, active }: {
 
 export default function TransactionPage() {
   const { id } = useParams<{ id: string }>();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [copied, setCopied] = useState<string | null>(null);
   const [showShare, setShowShare] = useState(false);
@@ -206,6 +207,7 @@ export default function TransactionPage() {
   return (
     <>
       <SubPageLayout title="Transaction Receipt"
+        onBack={() => navigate("/wallet")}
         actions={
           <button onClick={() => setShowShare(true)}
             className="w-9 h-9 rounded-full bg-muted flex items-center justify-center active:scale-90 transition-transform">

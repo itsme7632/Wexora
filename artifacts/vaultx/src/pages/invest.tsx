@@ -117,15 +117,15 @@ export default function InvestPage() {
     Math.min(plan.maxAmount, balance),
   ].filter(v => v >= plan.minAmount && v <= plan.maxAmount) : [];
 
-  if (plansLoading) return <SubPageLayout title="Invest"><div className="max-w-lg mx-auto px-4 py-5 space-y-4"><Skeleton className="h-48 rounded-2xl" /><Skeleton className="h-32 rounded-2xl" /></div></SubPageLayout>;
-  if (!plan) return <SubPageLayout title="Invest"><div className="max-w-lg mx-auto px-4 py-12 text-center"><p className="font-semibold text-foreground">Property not found</p><Button variant="outline" className="mt-4" onClick={() => navigate("/investments")}>Go Back</Button></div></SubPageLayout>;
+  if (plansLoading) return <SubPageLayout title="Invest" onBack={() => navigate("/investments")}><div className="max-w-lg mx-auto px-4 py-5 space-y-4"><Skeleton className="h-48 rounded-2xl" /><Skeleton className="h-32 rounded-2xl" /></div></SubPageLayout>;
+  if (!plan) return <SubPageLayout title="Invest" onBack={() => navigate("/investments")}><div className="max-w-lg mx-auto px-4 py-12 text-center"><p className="font-semibold text-foreground">Property not found</p><Button variant="outline" className="mt-4" onClick={() => navigate("/investments")}>Go Back</Button></div></SubPageLayout>;
 
   const primaryImage = plan.bannerImageUrl || plan.images?.[0] || null;
 
   /* ═══ STEP 3: SUCCESS ═══ */
   if (step === 3) {
     return (
-      <SubPageLayout title="Investment Confirmed">
+      <SubPageLayout title="Investment Confirmed" onBack={() => navigate("/portfolio")}>
         <div className="max-w-lg mx-auto px-4 py-8 text-center space-y-6 animate-fade-in">
           <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center mx-auto">
             <CheckCircle size={40} className="text-white" />
@@ -199,7 +199,7 @@ export default function InvestPage() {
   }
 
   return (
-    <SubPageLayout title={step === 1 ? "Invest in Property" : "Review Investment"}>
+    <SubPageLayout title={step === 1 ? "Invest in Property" : "Review Investment"} onBack={() => navigate(plan ? `/opportunity/${plan.id}` : "/investments")}>
       <div className="max-w-5xl mx-auto px-4 py-5 lg:px-8 pb-32 space-y-5">
 
         {/* ── Step Indicator ───────────────────────────────────── */}

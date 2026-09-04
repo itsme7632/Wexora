@@ -139,7 +139,7 @@ export default function TransferPage() {
   /* ─── Success screen ───────────────────────────────────────────────────── */
   if (step === "success") {
     return (
-      <SubPageLayout title="Transfer Sent">
+      <SubPageLayout title="Transfer Sent" onBack={() => navigate("/wallet")}>
         <div className="max-w-lg mx-auto text-center py-8 space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto">
             <CheckCircle2 size={32} className="text-emerald-500" />
@@ -175,7 +175,7 @@ export default function TransferPage() {
 
   /* ─── Main multi-step flow ────────────────────────────────────────────── */
   return (
-    <SubPageLayout title="Transfer USDT">
+    <SubPageLayout title="Transfer USDT" onBack={() => navigate("/wallet")}>
       <div className="max-w-lg mx-auto pb-32 space-y-5">
 
         <StepBar current={step} />

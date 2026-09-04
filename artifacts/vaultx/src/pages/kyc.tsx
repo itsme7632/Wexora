@@ -7,6 +7,7 @@ import {
 import { useGetKycStatus, getGetKycStatusQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
+import { BackTo } from "@/components/BackTo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,6 +163,7 @@ export default function KycPage() {
   if (isLoading) return (
     <AppLayout fullBleed>
       <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
+        <BackTo to="/settings" label="Settings" />
         <Skeleton className="h-32 rounded-2xl" />
         <Skeleton className="h-48 rounded-2xl" />
         <Skeleton className="h-48 rounded-2xl" />
@@ -175,6 +177,7 @@ export default function KycPage() {
   if (status === "approved") return (
     <AppLayout fullBleed>
       <div className="max-w-lg mx-auto px-4 py-12 text-center animate-fade-in">
+        <div className="-mt-4 mb-4 text-left"><BackTo to="/settings" label="Settings" /></div>
         <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
           <ShieldCheck size={36} className="text-emerald-500" />
         </div>
@@ -192,6 +195,7 @@ export default function KycPage() {
   if (status === "pending") return (
     <AppLayout fullBleed>
       <div className="max-w-lg mx-auto px-4 py-12 text-center animate-fade-in">
+        <div className="-mt-4 mb-4 text-left"><BackTo to="/settings" label="Settings" /></div>
         <div className="w-20 h-20 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
           <Clock size={36} className="text-amber-500" />
         </div>
@@ -210,6 +214,7 @@ export default function KycPage() {
   return (
     <AppLayout fullBleed>
       <div className="max-w-lg mx-auto px-4 py-5 pb-28 space-y-5">
+        <BackTo to="/settings" label="Settings" />
 
         {/* ── Header ───────────────────────────────────────────── */}
         <div className="v3-gradient rounded-2xl p-5 text-white animate-fade-in">

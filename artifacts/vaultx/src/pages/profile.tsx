@@ -8,6 +8,7 @@ import { useUpdateUserProfile, getGetMeQueryKey } from "@workspace/api-client-re
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
+import { BackTo } from "@/components/BackTo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +75,9 @@ export default function ProfilePage() {
   return (
     <AppLayout fullBleed>
       <div className="max-w-6xl mx-auto px-4 py-4 lg:px-8 pb-28 space-y-4 md:space-y-5">
+
+        {/* Back */}
+        <BackTo to="/settings" label="Settings" />
 
         {/* ══════════════════════════════════════════════════════════
            A. PROFILE IDENTITY HERO — Full-width with 2-col inner layout
@@ -324,7 +328,7 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-2.5">
                     <span className="text-xs text-muted-foreground font-medium">Member ID</span>
                   </div>
-                  <span className="text-sm font-bold text-foreground font-mono tracking-wider">{user?.displayId ? `WX${user.displayId}` : "—"}</span>
+                  <span className="text-sm font-bold text-foreground font-mono tracking-wider">{user?.displayId ? `EF${user.displayId}` : "—"}</span>
                 </div>
                 {/* Referral Code */}
                 <div className="flex items-center justify-between py-2 border-t border-border/30">

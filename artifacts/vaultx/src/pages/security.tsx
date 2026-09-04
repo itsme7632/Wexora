@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { AppLayout } from "@/components/AppLayout";
+import { BackTo } from "@/components/BackTo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -217,6 +218,9 @@ export default function SecurityPage() {
   return (
     <AppLayout fullBleed>
       <div className="max-w-2xl mx-auto px-4 py-5 lg:px-8 pb-28 space-y-5">
+
+        {/* Back */}
+        <BackTo to="/settings" label="Settings" />
 
         {/* ── Security Score Hero ──────────────────────────────── */}
         <SecurityScore items={securityItems} />

@@ -140,7 +140,7 @@ export default function WithdrawPage() {
   /* ─── Security setup required screen ──────────────────────────────────── */
   if (secStatus && !allConfigured) {
     return (
-      <SubPageLayout title="Withdraw USDT">
+      <SubPageLayout title="Withdraw USDT" onBack={() => navigate("/wallet")}>
         <div className="max-w-lg mx-auto space-y-5 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -182,7 +182,7 @@ export default function WithdrawPage() {
   /* ─── Success screen ───────────────────────────────────────────────────── */
   if (step === "success") {
     return (
-      <SubPageLayout title="Withdrawal Submitted">
+      <SubPageLayout title="Withdrawal Submitted" onBack={() => navigate("/wallet")}>
         <div className="max-w-lg mx-auto text-center py-8 space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto">
             <Clock size={32} className="text-amber-500" />
@@ -219,7 +219,7 @@ export default function WithdrawPage() {
 
   /* ─── Main multi-step flow ────────────────────────────────────────────── */
   return (
-    <SubPageLayout title="Withdraw USDT">
+    <SubPageLayout title="Withdraw USDT" onBack={() => navigate("/wallet")}>
       <div className="max-w-lg mx-auto pb-32 space-y-5">
 
         <StepBar current={step} />

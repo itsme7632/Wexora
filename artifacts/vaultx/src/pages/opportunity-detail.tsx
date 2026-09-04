@@ -125,7 +125,7 @@ export default function OpportunityDetailPage() {
 
   if (isLoading) {
     return (
-      <SubPageLayout title="Property">
+      <SubPageLayout title="Property" onBack={() => navigate("/investments")}>
         <div className="max-w-6xl mx-auto px-4 py-5 space-y-4">
           <Skeleton className="h-72 rounded-2xl" />
           <div className="grid lg:grid-cols-5 gap-5">
@@ -139,7 +139,7 @@ export default function OpportunityDetailPage() {
 
   if (!plan) {
     return (
-      <SubPageLayout title="Property">
+      <SubPageLayout title="Property" onBack={() => navigate("/investments")}>
         <div className="max-w-lg mx-auto px-4 py-12 text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Building2 size={28} className="text-primary/50" />
@@ -153,7 +153,7 @@ export default function OpportunityDetailPage() {
   }
 
   return (
-    <SubPageLayout title="Property Details">
+    <SubPageLayout title="Property Details" onBack={() => navigate("/investments")}>
       <div className="max-w-6xl mx-auto px-4 py-5 lg:px-8 pb-32 space-y-5">
 
         {/* ── Image Gallery ────────────────────────────────────── */}

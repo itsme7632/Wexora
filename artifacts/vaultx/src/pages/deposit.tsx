@@ -166,8 +166,7 @@ export default function DepositPage() {
 
   /* ─── Success / Instructions screen ───────────────────────────────────── */
   if (step === "instructions") {
-    return (
-      <SubPageLayout title="Deposit Submitted">
+    return (          <SubPageLayout title="Deposit Submitted" onBack={() => navigate("/wallet")}>
         <div className="max-w-lg mx-auto text-center py-8 space-y-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto">
             <CheckCircle2 size={32} className="text-emerald-500" />
@@ -209,7 +208,7 @@ export default function DepositPage() {
 
   /* ─── Main multi-step flow ────────────────────────────────────────────── */
   return (
-    <SubPageLayout title="Deposit USDT">
+    <SubPageLayout title="Deposit USDT" onBack={() => navigate("/wallet")}>
       <div className="max-w-lg mx-auto pb-32 space-y-5">
 
         {/* Step indicator */}

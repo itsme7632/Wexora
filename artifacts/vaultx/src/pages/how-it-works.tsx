@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { AppLayout } from "@/components/AppLayout";
+import { BackTo } from "@/components/BackTo";
 import { Button } from "@/components/ui/button";
 import {
   UserPlus, ShieldCheck, Wallet, Building2, TrendingUp, BarChart3,
@@ -29,6 +30,11 @@ export default function HowItWorksPage() {
   return (
     <AppLayout title="How EstateFund Works">
       <div className="pb-24">
+
+        {/* ── Back ── */}
+        <div className="px-4 lg:px-12 max-w-6xl mx-auto pt-3">
+          <BackTo to="/settings" label="Settings" />
+        </div>
 
         {/* ── Hero ── */}
         <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 relative overflow-hidden">

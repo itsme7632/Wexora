@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, HelpCircle, Search, ArrowRight } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
+import { BackTo } from "@/components/BackTo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
@@ -79,6 +80,9 @@ export default function FaqPage() {
   return (
     <AppLayout title="FAQ — EstateFund">
       <div className="max-w-2xl mx-auto px-4 py-5 lg:px-8 pb-24 space-y-5">
+
+        {/* Back */}
+        <BackTo to="/settings" label="Settings" />
 
         {/* Header */}
         <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-2xl p-6 text-white animate-fade-in">
