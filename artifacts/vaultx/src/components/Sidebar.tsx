@@ -43,14 +43,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* ── Brand ─────────────────────────────────────────────── */}
       <div className="px-5 pt-6 pb-5 shrink-0">
         <Link href="/" className="flex items-center gap-3" onClick={handleNav}>
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
-            <span className="text-white font-bold text-sm tracking-tight">EF</span>
+          <div className="w-9 h-9 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg shadow-sidebar-primary/25">
+            <span className="text-sidebar-primary-foreground font-bold text-sm tracking-tight">EF</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-white tracking-tight leading-none">
+            <span className="text-sm font-bold text-sidebar-foreground tracking-tight leading-none">
               ESTATEFUND
             </span>
-            <span className="text-[9px] font-medium text-emerald-400/40 tracking-[0.25em] leading-none mt-1">
+            <span className="text-[9px] font-medium text-sidebar-accent-foreground/60 tracking-[0.25em] leading-none mt-1">
               INVEST
             </span>
           </div>
@@ -60,7 +60,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* ── Scrollable Navigation ─────────────────────────────── */}
       <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3 scrollbar-thin sidebar-scroll">
         {/* Main Menu */}
-        <p className="text-[10px] font-semibold text-emerald-400/30 uppercase tracking-[0.15em] px-3 mb-2">
+        <p className="text-[10px] font-semibold text-sidebar-accent-foreground/50 uppercase tracking-[0.15em] px-3 mb-2">
           Main Menu
         </p>
 
@@ -75,8 +75,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group",
                   active
-                    ? "bg-primary/15 text-white"
-                    : "text-white/40 hover:text-white/75 hover:bg-white/5"
+                    ? "bg-sidebar-accent text-sidebar-foreground"
+                    : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
                 )}
               >
                 <Icon
@@ -84,18 +84,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   strokeWidth={active ? 2 : 1.5}
                   className={cn(
                     "shrink-0 transition-colors",
-                    active ? "text-primary" : "text-emerald-400/30 group-hover:text-emerald-400/60"
+                    active ? "text-sidebar-primary" : "text-sidebar-accent-foreground/40 group-hover:text-sidebar-accent-foreground/70"
                   )}
                 />
                 <span className="flex-1">{label}</span>
-                {active && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                {active && <div className="w-1.5 h-1.5 rounded-full bg-sidebar-primary" />}
               </Link>
             );
           })}
         </div>
 
         {/* Account Section */}
-        <p className="text-[10px] font-semibold text-emerald-400/30 uppercase tracking-[0.15em] px-3 mb-2 mt-6">
+        <p className="text-[10px] font-semibold text-sidebar-accent-foreground/50 uppercase tracking-[0.15em] px-3 mb-2 mt-6">
           Account
         </p>
 
@@ -110,8 +110,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group",
                   active
-                    ? "bg-primary/15 text-white"
-                    : "text-white/40 hover:text-white/75 hover:bg-white/5"
+                    ? "bg-sidebar-accent text-sidebar-foreground"
+                    : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
                 )}
               >
                 <Icon
@@ -119,11 +119,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   strokeWidth={active ? 2 : 1.5}
                   className={cn(
                     "shrink-0 transition-colors",
-                    active ? "text-primary" : "text-emerald-400/30 group-hover:text-emerald-400/60"
+                    active ? "text-sidebar-primary" : "text-sidebar-accent-foreground/40 group-hover:text-sidebar-accent-foreground/70"
                   )}
                 />
                 <span className="flex-1">{label}</span>
-                {active && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                {active && <div className="w-1.5 h-1.5 rounded-full bg-sidebar-primary" />}
               </Link>
             );
           })}
@@ -138,8 +138,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group",
                 isActive("/admin")
-                  ? "bg-amber-500/15 text-amber-300"
-                  : "text-amber-400/40 hover:text-amber-300/80 hover:bg-amber-500/5"
+                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-300"
+                  : "text-amber-600/60 dark:text-amber-400/40 hover:text-amber-600 dark:hover:text-amber-300/80 hover:bg-amber-500/5"
               )}
             >
               <Shield size={18} strokeWidth={1.5} className="shrink-0" />
@@ -150,38 +150,38 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* ── Bottom Section (always accessible) ────────────────── */}
-      <div className="shrink-0 px-3 pb-4 space-y-1.5 border-t border-white/5 pt-3">
+      <div className="shrink-0 px-3 pb-4 space-y-1.5 border-t border-sidebar-border pt-3">
         {/* User Profile Card */}
         <Link
           href="/profile"
           onClick={handleNav}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all group"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-sidebar-accent/50 transition-all group"
         >
-          <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-            <span className="text-primary font-bold text-xs">
+          <div className="w-8 h-8 rounded-lg bg-sidebar-primary/15 flex items-center justify-center shrink-0">
+            <span className="text-sidebar-primary font-bold text-xs">
               {user?.username?.[0]?.toUpperCase() ?? "?"}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-medium text-white truncate leading-tight">
+            <p className="text-[13px] font-medium text-sidebar-foreground truncate leading-tight">
               {user?.fullName || user?.username || "User"}
             </p>
-            <p className="text-[11px] text-emerald-400/30 truncate">
+            <p className="text-[11px] text-sidebar-accent-foreground/50 truncate">
               {user?.email || ""}
             </p>
           </div>
-          <ChevronRight size={14} className="text-white/15 shrink-0" />
+          <ChevronRight size={14} className="text-sidebar-foreground/20 shrink-0" />
         </Link>
 
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-white/40 hover:text-white/75 hover:bg-white/5 transition-all"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50 transition-all"
         >
           {theme === "dark" ? (
-            <Sun size={18} strokeWidth={1.5} className="shrink-0 text-emerald-400/30" />
+            <Sun size={18} strokeWidth={1.5} className="shrink-0 text-sidebar-accent-foreground/40" />
           ) : (
-            <Moon size={18} strokeWidth={1.5} className="shrink-0 text-emerald-400/30" />
+            <Moon size={18} strokeWidth={1.5} className="shrink-0 text-sidebar-accent-foreground/40" />
           )}
           <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
         </button>
@@ -192,7 +192,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
             window.location.href = "/login";
           }}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-red-400/50 hover:text-red-400 hover:bg-red-500/5 transition-all"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-red-500/60 dark:text-red-400/50 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/5 transition-all"
         >
           <LogOut size={18} strokeWidth={1.5} className="shrink-0" />
           <span>Sign out</span>

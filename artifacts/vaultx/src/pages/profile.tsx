@@ -16,10 +16,10 @@ import { Link } from "wouter";
 
 function kycBadge(status: string) {
   switch (status) {
-    case "approved": return { label: "Verified", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle };
-    case "pending": return { label: "Pending", color: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Shield };
-    case "rejected": return { label: "Rejected", color: "bg-red-500/10 text-red-500 border-red-500/20", icon: Shield };
-    default: return { label: "Unverified", color: "bg-muted text-muted-foreground border-border", icon: Shield };
+    case "approved": return { label: "Verified", color: "bg-white/20 text-white border-white/30", icon: CheckCircle };
+    case "pending": return { label: "Pending", color: "bg-amber-400/20 text-amber-100 border-amber-400/30", icon: Shield };
+    case "rejected": return { label: "Rejected", color: "bg-red-400/20 text-red-100 border-red-400/30", icon: Shield };
+    default: return { label: "Unverified", color: "bg-white/10 text-white/60 border-white/20", icon: Shield };
   }
 }
 
@@ -113,8 +113,8 @@ export default function ProfilePage() {
                     </span>
                   )}
                   {user?.twoFaEnabled && (
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-white/15 text-white border border-white/20">
-                      <Shield size={12} className="text-emerald-200" /> 2FA
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-white/20 text-white border border-white/30">
+                      <Shield size={12} className="text-emerald-300" /> 2FA
                     </span>
                   )}
                 </div>

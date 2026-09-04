@@ -50,6 +50,7 @@ import TermsPage from "@/pages/terms";
 import FaqPage from "@/pages/faq";
 
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 setBaseUrl(null);
 
@@ -462,6 +463,7 @@ function AppContent() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <ScrollToTop />
           <AuthProvider>
             <MaintenanceGate>
               <Router />
