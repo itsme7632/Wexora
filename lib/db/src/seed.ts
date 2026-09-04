@@ -18,6 +18,33 @@ import { eq, count, or } from "drizzle-orm";
 
 const { Pool } = pg;
 
+/**
+ * Legacy plans that must NOT appear as current active opportunities.
+ * Includes old crypto plans AND the previous generation of property names.
+ * Retired by ensureOpportunities: removed if unused, deactivated if referenced.
+ */
+const LEGACY_PLAN_NAMES = [
+  // Old crypto/HYIP plans
+  "Starter Plan",
+  "Growth Plan",
+  "Elite Plan",
+  "Digital Asset Allocation",
+  "AI Infrastructure",
+  "Technology Expansion",
+  "Market Liquidity Program",
+  "Strategic Growth Allocation",
+  // Previous property catalog generation
+  "Skyline Residences",
+  "Marina Vista Tower",
+  "The Meridian Tower",
+  "Villa Serenata",
+  "Oakwood Promenade",
+  "Coastal Retreat",
+  "Rivington Quarter",
+  "Bayshore Residences",
+  "Toronto Heights",
+];
+
 async function getDb() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle(pool, { schema });
@@ -31,321 +58,353 @@ function getOpportunities() {
 
   return [
     {
-      name: "Skyline Residences",
-      description: "Premium waterfront residential tower in the heart of Dubai Marina. Features 1-3 bedroom apartments with floor-to-ceiling windows, private balconies, and panoramic marina views. Resort-style amenities including infinity pool, fitness center, and 24/7 concierge.",
+      name: "Harborview Terrace",
+      description: "Contemporary waterfront residential development on Boston's historic waterfront. Studio to three-bedroom residences with harbor views, private terraces, and concierge services. Steps from the North End and financial district, targeting strong professional rental demand in one of America's most supply-constrained housing markets.",
       minAmount: "500.00000000",
-      maxAmount: "50000.00000000",
+      maxAmount: "60000.00000000",
       dailyReturnRate: "0.011000",
       minRoiRate: "0.008000",
       maxRoiRate: "0.014000",
-      durationDays: 365,
+      durationDays: 480,
       riskLevel: "medium",
-      features: ["Marina-front location", "Infinity pool & gym", "24/7 concierge", "Smart home ready"],
+      features: ["Boston waterfront", "Harbor views", "Concierge services", "Transit accessible"],
       isActive: true,
       isFeatured: true,
       category: "Residential",
-      fundingGoal: "5000000.00000000",
-      currentFunding: "3200000.00000000",
+      fundingGoal: "4200000.00000000",
+      currentFunding: "1850000.00000000",
       status: "featured",
       colorTheme: "emerald",
       autoCompoundAvailable: true,
-      startDate: daysAgo(30),
-      endDate: daysFromNow(335),
+      startDate: daysAgo(25),
+      endDate: daysFromNow(455),
       sortOrder: 1,
       propertyType: "residential",
-      location: "Dubai Marina, Dubai, UAE",
+      location: "Seaport District, Boston, USA",
       images: [
-        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80",
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+        "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=800&q=80",
         "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
-        "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
-        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
         "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
-      ],
-      fundingDeadline: daysFromNow(180),
-    },
-    {
-      name: "Marina Vista Tower",
-      description: "Contemporary residential tower in Dubai Marina with stunning sea views. Studio to 2-bedroom units with modern finishes, communal rooftop terrace, and direct marina walkway access.",
-      minAmount: "300.00000000",
-      maxAmount: "30000.00000000",
-      dailyReturnRate: "0.012000",
-      minRoiRate: "0.009000",
-      maxRoiRate: "0.015000",
-      durationDays: 270,
-      riskLevel: "low",
-      features: ["Sea-facing units", "Rooftop terrace", "Marina walkway access", "Modern finishes"],
-      isActive: true,
-      isFeatured: false,
-      category: "Residential",
-      fundingGoal: "3000000.00000000",
-      currentFunding: "1800000.00000000",
-      status: "active",
-      colorTheme: "blue",
-      autoCompoundAvailable: true,
-      startDate: daysAgo(14),
-      endDate: daysFromNow(256),
-      sortOrder: 2,
-      propertyType: "residential",
-      location: "Dubai Marina, Dubai, UAE",
-      images: [
-        "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800&q=80",
-        "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
-        "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=800&q=80",
-        "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=800&q=80",
-        "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
+        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
         "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80",
       ],
-      fundingDeadline: daysFromNow(120),
+      fundingDeadline: daysFromNow(155),
     },
     {
-      name: "The Meridian Tower",
-      description: "Grade A commercial office tower in Canary Wharf, London. Premium workspace with flexible floor plates, high-speed connectivity, and excellent transport links. Ideal for corporate tenants and financial institutions.",
+      name: "The Foundry Lofts",
+      description: "Adaptive-reuse conversion of a historic warehouse into industrial-chic loft residences in Austin's emerging East Side. Exposed brick, high ceilings, and open floor plans appeal to Austin's growing tech workforce. Ground-floor creative retail spaces complement the residential community.",
+      minAmount: "400.00000000",
+      maxAmount: "50000.00000000",
+      dailyReturnRate: "0.011500",
+      minRoiRate: "0.009000",
+      maxRoiRate: "0.015000",
+      durationDays: 420,
+      riskLevel: "medium",
+      features: ["Historic conversion", "Industrial lofts", "East Austin location", "Creative retail"],
+      isActive: true,
+      isFeatured: false,
+      category: "Mixed-Use",
+      fundingGoal: "2800000.00000000",
+      currentFunding: "960000.00000000",
+      status: "active",
+      colorTheme: "amber",
+      autoCompoundAvailable: true,
+      startDate: daysAgo(15),
+      endDate: daysFromNow(405),
+      sortOrder: 2,
+      propertyType: "mixed-use",
+      location: "East Side, Austin, USA",
+      images: [
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80",
+        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
+        "https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=800&q=80",
+        "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
+        "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80",
+      ],
+      fundingDeadline: daysFromNow(125),
+    },
+    {
+      name: "Cypress Gate Offices",
+      description: "Class A suburban office campus in Atlanta's Central Perimeter submarket, repositioned for the post-pandemic hybrid-work era. Features flexible floor plates, upgraded HVAC systems, and an extensive amenity package. Anchored by a credit tenant with a long-term lease structure.",
       minAmount: "1000.00000000",
-      maxAmount: "100000.00000000",
-      dailyReturnRate: "0.009500",
+      maxAmount: "90000.00000000",
+      dailyReturnRate: "0.009000",
       minRoiRate: "0.007000",
-      maxRoiRate: "0.012000",
+      maxRoiRate: "0.011500",
       durationDays: 730,
       riskLevel: "low",
-      features: ["Grade A offices", "Flexible floor plates", "Canary Wharf address", "Transport links"],
+      features: ["Class A offices", "Credit tenant", "Long-term lease", "Amenity-rich campus"],
       isActive: true,
       isFeatured: true,
       category: "Commercial",
-      fundingGoal: "10000000.00000000",
-      currentFunding: "6500000.00000000",
+      fundingGoal: "7500000.00000000",
+      currentFunding: "4100000.00000000",
       status: "featured",
       colorTheme: "purple",
       autoCompoundAvailable: true,
-      startDate: daysAgo(45),
-      endDate: daysFromNow(685),
+      startDate: daysAgo(40),
+      endDate: daysFromNow(690),
       sortOrder: 3,
       propertyType: "commercial",
-      location: "Canary Wharf, London, UK",
+      location: "Central Perimeter, Atlanta, USA",
       images: [
         "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80",
         "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
         "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&q=80",
-        "https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=800&q=80",
-        "https://images.unsplash.com/photo-1464938050520-ef2571d8e831?w=800&q=80",
         "https://images.unsplash.com/photo-1431576901776-e539bd916ba2?w=800&q=80",
-        "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
+        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80",
+        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80",
+        "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80",
       ],
-      fundingDeadline: daysFromNow(200),
+      fundingDeadline: daysFromNow(210),
     },
     {
-      name: "Villa Serenata",
-      description: "Exclusive private villa in Seminyak, Bali with private pool and tropical garden. Boutique hospitality property generating consistent seasonal rental income from luxury vacation bookings.",
+      name: "Palm Grove Resort",
+      description: "Boutique beachfront resort on Phuket's quiet west coast. 48 keys with pool villas, beach club, and wellness facilities targeting the premium leisure segment. Thailand's tourism recovery and limited west-coast supply underpin the investment case.",
       minAmount: "250.00000000",
-      maxAmount: "25000.00000000",
-      dailyReturnRate: "0.014000",
+      maxAmount: "40000.00000000",
+      dailyReturnRate: "0.013000",
       minRoiRate: "0.010000",
-      maxRoiRate: "0.018000",
-      durationDays: 180,
-      riskLevel: "medium",
-      features: ["Private pool", "Tropical garden", "Luxury vacation rentals", "Boutique hospitality"],
-      isActive: true,
-      isFeatured: false,
-      category: "Hospitality",
-      fundingGoal: "1500000.00000000",
-      currentFunding: "780000.00000000",
-      status: "active",
-      colorTheme: "green",
-      autoCompoundAvailable: true,
-      startDate: daysAgo(20),
-      endDate: daysFromNow(160),
-      sortOrder: 4,
-      propertyType: "hospitality",
-      location: "Seminyak, Bali, Indonesia",
-      images: [
-        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-        "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-        "https://images.unsplash.com/photo-1599809275671-b5942cabc7a2?w=800&q=80",
-        "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&q=80",
-        "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
-        "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=80",
-        "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80",
-      ],
-      fundingDeadline: daysFromNow(90),
-    },
-    {
-      name: "Oakwood Promenade",
-      description: "Mixed-use development on the Upper West Side, New York. Combines ground-floor retail with luxury residential units in one of Manhattan most sought-after neighborhoods. Strong rental demand and capital appreciation.",
-      minAmount: "1000.00000000",
-      maxAmount: "75000.00000000",
-      dailyReturnRate: "0.011000",
-      minRoiRate: "0.008000",
-      maxRoiRate: "0.014000",
+      maxRoiRate: "0.017000",
       durationDays: 540,
       riskLevel: "medium",
-      features: ["Upper West Side location", "Retail + residential", "Strong rental demand", "Capital appreciation"],
-      isActive: true,
-      isFeatured: true,
-      category: "Mixed-Use",
-      fundingGoal: "8000000.00000000",
-      currentFunding: "4200000.00000000",
-      status: "active",
-      colorTheme: "blue",
-      autoCompoundAvailable: true,
-      startDate: daysAgo(60),
-      endDate: daysFromNow(480),
-      sortOrder: 5,
-      propertyType: "mixed-use",
-      location: "Upper West Side, New York, USA",
-      images: [
-        "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
-        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
-        "https://images.unsplash.com/photo-1600573472591-ee6981cf81d6?w=800&q=80",
-        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80",
-        "https://images.unsplash.com/photo-1556909211-36987dde7ba6?w=800&q=80",
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
-      ],
-      fundingDeadline: daysFromNow(150),
-    },
-    {
-      name: "Coastal Retreat",
-      description: "Renovated heritage property in Lisbon Alfama district. Boutique guesthouse with panoramic river views, blending traditional Portuguese architecture with contemporary luxury finishes.",
-      minAmount: "400.00000000",
-      maxAmount: "40000.00000000",
-      dailyReturnRate: "0.012500",
-      minRoiRate: "0.009000",
-      maxRoiRate: "0.016000",
-      durationDays: 365,
-      riskLevel: "medium",
-      features: ["Heritage renovation", "River views", "Boutique guesthouse", "Alfama location"],
+      features: ["Beachfront location", "Pool villas", "Wellness facilities", "Premium leisure"],
       isActive: true,
       isFeatured: false,
       category: "Hospitality",
-      fundingGoal: "2500000.00000000",
-      currentFunding: "900000.00000000",
+      fundingGoal: "3200000.00000000",
+      currentFunding: "1180000.00000000",
       status: "active",
-      colorTheme: "emerald",
+      colorTheme: "teal",
       autoCompoundAvailable: true,
-      startDate: daysAgo(10),
-      endDate: daysFromNow(355),
-      sortOrder: 6,
+      startDate: daysAgo(18),
+      endDate: daysFromNow(522),
+      sortOrder: 4,
       propertyType: "hospitality",
-      location: "Alfama, Lisbon, Portugal",
+      location: "Bang Tao, Phuket, Thailand",
       images: [
-        "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800&q=80",
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
-        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
-        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80",
-        "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80",
-        "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80",
-      ],
-      fundingDeadline: daysFromNow(100),
-    },
-    {
-      name: "Rivington Quarter",
-      description: "Prime retail and dining complex in Singapore vibrant Tanjong Pagar district. High-footfall commercial space with established F&B tenants and strong lease income.",
-      minAmount: "800.00000000",
-      maxAmount: "60000.00000000",
-      dailyReturnRate: "0.009000",
-      minRoiRate: "0.007000",
-      maxRoiRate: "0.011000",
-      durationDays: 545,
-      riskLevel: "low",
-      features: ["High-footfall retail", "Established tenants", "Strong lease income", "Tanjong Pagar address"],
-      isActive: true,
-      isFeatured: false,
-      category: "Commercial",
-      fundingGoal: "6000000.00000000",
-      currentFunding: "2100000.00000000",
-      status: "active",
-      colorTheme: "purple",
-      autoCompoundAvailable: true,
-      startDate: daysAgo(5),
-      endDate: daysFromNow(540),
-      sortOrder: 7,
-      propertyType: "commercial",
-      location: "Tanjong Pagar, Singapore",
-      images: [
-        "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80",
-        "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80",
-        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&q=80",
-        "https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80",
-        "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
-        "https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=800&q=80",
-      ],
-      fundingDeadline: daysFromNow(160),
-    },
-    {
-      name: "Bayshore Residences",
-      description: "Waterfront residential development in Miamis Brickell district. Modern condominiums with bay views, resort-style pool deck, and proximity to financial district and cultural attractions.",
-      minAmount: "600.00000000",
-      maxAmount: "50000.00000000",
-      dailyReturnRate: "0.010500",
-      minRoiRate: "0.008000",
-      maxRoiRate: "0.013000",
-      durationDays: 450,
-      riskLevel: "medium",
-      features: ["Waterfront location", "Bay views", "Resort-style pool", "Brickell district"],
-      isActive: true,
-      isFeatured: false,
-      category: "Residential",
-      fundingGoal: "4000000.00000000",
-      currentFunding: "1500000.00000000",
-      status: "active",
-      colorTheme: "blue",
-      autoCompoundAvailable: true,
-      startDate: daysAgo(8),
-      endDate: daysFromNow(442),
-      sortOrder: 8,
-      propertyType: "residential",
-      location: "Brickell, Miami, USA",
-      images: [
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
-        "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
-        "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=80",
-        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
-        "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=800&q=80",
+        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+        "https://images.unsplash.com/photo-1599809275671-b5942cabc7a2?w=800&q=80",
+        "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800&q=80",
+        "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80",
+        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80",
+        "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&q=80",
+        "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80",
       ],
       fundingDeadline: daysFromNow(140),
     },
     {
-      name: "Toronto Heights",
-      description: "New residential apartment tower in Torontos Entertainment District. Steps from Union Station, premium finishes, and access to Canadas largest transit hub. Strong rental demand in a growing market.",
-      minAmount: "500.00000000",
-      maxAmount: "45000.00000000",
+      name: "Riverwalk Commons",
+      description: "Mixed-use riverfront development in San Antonio's revitalized Pearl District corridor. Ground-floor dining and retail along the river walk, with residential units above. The district's transformation into a cultural and culinary destination has driven sustained tenant demand.",
+      minAmount: "750.00000000",
+      maxAmount: "70000.00000000",
       dailyReturnRate: "0.010500",
       minRoiRate: "0.008000",
-      maxRoiRate: "0.013000",
-      durationDays: 400,
+      maxRoiRate: "0.013500",
+      durationDays: 600,
       riskLevel: "medium",
-      features: ["Near Union Station", "Premium finishes", "Strong rental demand", "Growing market"],
+      features: ["Riverfront location", "Retail and dining", "Pearl District", "Cultural destination"],
+      isActive: true,
+      isFeatured: false,
+      category: "Mixed-Use",
+      fundingGoal: "5200000.00000000",
+      currentFunding: "2240000.00000000",
+      status: "active",
+      colorTheme: "blue",
+      autoCompoundAvailable: true,
+      startDate: daysAgo(22),
+      endDate: daysFromNow(578),
+      sortOrder: 5,
+      propertyType: "mixed-use",
+      location: "Pearl District, San Antonio, USA",
+      images: [
+        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
+        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
+        "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&q=80",
+        "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&q=80",
+        "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
+        "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?w=800&q=80",
+        "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80",
+      ],
+      fundingDeadline: daysFromNow(170),
+    },
+    {
+      name: "Aurelia Residences",
+      description: "Mid-rise luxury condominium in Madrid's Chamberí district, one of the city's most desirable residential barrios. Classic Madrid architecture with modernized interiors, targeting both Spanish professionals and international buyers. Limited new supply in the historic center supports long-term value.",
+      minAmount: "600.00000000",
+      maxAmount: "55000.00000000",
+      dailyReturnRate: "0.010000",
+      minRoiRate: "0.007500",
+      maxRoiRate: "0.013000",
+      durationDays: 540,
+      riskLevel: "medium",
+      features: ["Chamberí district", "Classic architecture", "Modernized interiors", "Historic center"],
       isActive: true,
       isFeatured: false,
       category: "Residential",
-      fundingGoal: "3500000.00000000",
-      currentFunding: "1200000.00000000",
+      fundingGoal: "3600000.00000000",
+      currentFunding: "1330000.00000000",
+      status: "active",
+      colorTheme: "rose",
+      autoCompoundAvailable: true,
+      startDate: daysAgo(12),
+      endDate: daysFromNow(528),
+      sortOrder: 6,
+      propertyType: "residential",
+      location: "Chamberí, Madrid, Spain",
+      images: [
+        "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800&q=80",
+        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
+        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80",
+        "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80",
+        "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80",
+        "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=800&q=80",
+      ],
+      fundingDeadline: daysFromNow(145),
+    },
+    {
+      name: "Kestrel Logistics Hub",
+      description: "Modern logistics and light-industrial facility near Rotterdam's port corridor, Europe's largest container gateway. Clear-height warehouses with dock loading, solar-ready roofing, and direct highway access. Institutional demand for European logistics assets remains strong.",
+      minAmount: "1000.00000000",
+      maxAmount: "100000.00000000",
+      dailyReturnRate: "0.008500",
+      minRoiRate: "0.006500",
+      maxRoiRate: "0.010500",
+      durationDays: 730,
+      riskLevel: "low",
+      features: ["Rotterdam port corridor", "Clear-height warehouses", "Solar-ready", "Highway access"],
+      isActive: true,
+      isFeatured: true,
+      category: "Industrial",
+      fundingGoal: "9000000.00000000",
+      currentFunding: "3600000.00000000",
+      status: "featured",
+      colorTheme: "slate",
+      autoCompoundAvailable: true,
+      startDate: daysAgo(35),
+      endDate: daysFromNow(695),
+      sortOrder: 7,
+      propertyType: "commercial",
+      location: "Botlek, Rotterdam, Netherlands",
+      images: [
+        "https://images.unsplash.com/photo-1568992687947-868a62a9f521?w=800&q=80",
+        "https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=800&q=80",
+        "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80",
+        "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
+        "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80",
+        "https://images.unsplash.com/photo-1523755231516-e43fd2e8dca5?w=800&q=80",
+      ],
+      fundingDeadline: daysFromNow(195),
+    },
+    {
+      name: "Marbella Sunrise Villas",
+      description: "Collection of eight contemporary villas in Marbella's New Golden Mile, targeting the premium Costa del Sol lifestyle market. South-facing orientations, private pools, and open-plan living spaces. The area attracts year-round residents alongside seasonal occupants from across Europe.",
+      minAmount: "800.00000000",
+      maxAmount: "80000.00000000",
+      dailyReturnRate: "0.011000",
+      minRoiRate: "0.008500",
+      maxRoiRate: "0.014500",
+      durationDays: 540,
+      riskLevel: "medium",
+      features: ["New Golden Mile", "Private pools", "South-facing", "Costa del Sol"],
+      isActive: true,
+      isFeatured: false,
+      category: "Residential",
+      fundingGoal: "4400000.00000000",
+      currentFunding: "1760000.00000000",
+      status: "active",
+      colorTheme: "amber",
+      autoCompoundAvailable: true,
+      startDate: daysAgo(20),
+      endDate: daysFromNow(520),
+      sortOrder: 8,
+      propertyType: "residential",
+      location: "New Golden Mile, Marbella, Spain",
+      images: [
+        "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&q=80",
+        "https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=800&q=80",
+        "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80",
+        "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=800&q=80",
+        "https://images.unsplash.com/photo-1600585154084-4e5fe7c39198?w=800&q=80",
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+      ],
+      fundingDeadline: daysFromNow(150),
+    },
+    {
+      name: "The Loom Hotel",
+      description: "Boutique lifestyle hotel in Lisbon's creative Alcântara district, housed in a converted textile factory. 62 rooms with an industrial-luxe design language, rooftop bar, and event spaces. Lisbon's tourism sector continues to outperform Southern European peers.",
+      minAmount: "500.00000000",
+      maxAmount: "65000.00000000",
+      dailyReturnRate: "0.012000",
+      minRoiRate: "0.009000",
+      maxRoiRate: "0.016000",
+      durationDays: 600,
+      riskLevel: "medium",
+      features: ["Factory conversion", "Rooftop bar", "62 keys", "Alcântara district"],
+      isActive: true,
+      isFeatured: false,
+      category: "Hospitality",
+      fundingGoal: "5000000.00000000",
+      currentFunding: "2050000.00000000",
+      status: "active",
+      colorTheme: "violet",
+      autoCompoundAvailable: true,
+      startDate: daysAgo(16),
+      endDate: daysFromNow(584),
+      sortOrder: 9,
+      propertyType: "hospitality",
+      location: "Alcântara, Lisbon, Portugal",
+      images: [
+        "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
+        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
+        "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80",
+        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80",
+        "https://images.unsplash.com/photo-1590073242678-70ee3fc28e8e?w=800&q=80",
+        "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=800&q=80",
+      ],
+      fundingDeadline: daysFromNow(160),
+    },
+    {
+      name: "Northgate Exchange",
+      description: "Neighborhood retail center anchored by a national grocery tenant in Charlotte's high-growth Ballantyne submarket. Daily-needs retail has proven resilient through economic cycles, and the trade area benefits from sustained residential rooftops and rising incomes.",
+      minAmount: "750.00000000",
+      maxAmount: "75000.00000000",
+      dailyReturnRate: "0.009000",
+      minRoiRate: "0.007000",
+      maxRoiRate: "0.011000",
+      durationDays: 660,
+      riskLevel: "low",
+      features: ["Grocery anchored", "Daily-needs retail", "Ballantyne submarket", "High-growth area"],
+      isActive: true,
+      isFeatured: false,
+      category: "Commercial",
+      fundingGoal: "6800000.00000000",
+      currentFunding: "2720000.00000000",
       status: "active",
       colorTheme: "emerald",
       autoCompoundAvailable: true,
-      startDate: daysAgo(3),
-      endDate: daysFromNow(397),
-      sortOrder: 9,
-      propertyType: "residential",
-      location: "Entertainment District, Toronto, Canada",
+      startDate: daysAgo(28),
+      endDate: daysFromNow(632),
+      sortOrder: 10,
+      propertyType: "commercial",
+      location: "Ballantyne, Charlotte, USA",
       images: [
-        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&q=80",
-        "https://images.unsplash.com/photo-1600573472591-ee6981cf81d6?w=800&q=80",
-        "https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800&q=80",
-        "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80",
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
-        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
+        "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80",
+        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80",
+        "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800&q=80",
+        "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&q=80",
+        "https://images.unsplash.com/photo-1567449303078-57ad995bd329?w=800&q=80",
       ],
-      fundingDeadline: daysFromNow(130),
+      fundingDeadline: daysFromNow(180),
     },
   ];
 }
 
-const OLD_PLAN_NAMES = ["Starter Plan", "Growth Plan", "Elite Plan", "Digital Asset Allocation", "AI Infrastructure", "Technology Expansion", "Market Liquidity Program", "Strategic Growth Allocation"];
+
 
 async function seedInvestmentPlans(db: ReturnType<typeof drizzle<typeof schema>>) {
   const existing = await db.select({ c: count() }).from(investmentPlansTable);
@@ -364,35 +423,39 @@ async function seedInvestmentPlans(db: ReturnType<typeof drizzle<typeof schema>>
  */
 async function ensureOpportunities(db: ReturnType<typeof drizzle<typeof schema>>) {
   const opportunities = getOpportunities();
-  const allPlans = await db.select({ id: investmentPlansTable.id, name: investmentPlansTable.name }).from(investmentPlansTable);
-  const nameToId = Object.fromEntries(allPlans.map((p) => [p.name, p.id]));
 
-  const oldPlanMapping: Record<string, ReturnType<typeof getOpportunities>[number]> = {
-    "Starter Plan": opportunities[0],
-    "Growth Plan": opportunities[1],
-    "Elite Plan": opportunities[2],
-    "Digital Asset Allocation": opportunities[3],
-    "AI Infrastructure": opportunities[4],
-    "Technology Expansion": opportunities[5],
-    "Market Liquidity Program": opportunities[6],
-    "Strategic Growth Allocation": opportunities[7],
-  };
-
-  for (const [oldName, newPlanData] of Object.entries(oldPlanMapping)) {
-    if (nameToId[oldName] !== undefined && nameToId[newPlanData.name] === undefined) {
-      const planId = nameToId[oldName];
-      await db.update(investmentPlansTable).set(newPlanData as any).where(eq(investmentPlansTable.id, planId));
-      console.log(`[seed] Migrated plan "${oldName}" → "${newPlanData.name}" ✓`);
-    }
-  }
-
-  const refreshedPlans = await db.select({ name: investmentPlansTable.name }).from(investmentPlansTable);
+  // Insert any missing current-catalog plans
+  const refreshedPlans = await db.select({ id: investmentPlansTable.id, name: investmentPlansTable.name }).from(investmentPlansTable);
   const existingNames = new Set(refreshedPlans.map((p) => p.name));
 
   for (const plan of opportunities) {
     if (!existingNames.has(plan.name)) {
       await db.insert(investmentPlansTable).values(plan as any);
       console.log(`[seed] Inserted missing plan "${plan.name}" ✓`);
+    }
+  }
+
+  // Retire legacy plans: delete if unused, deactivate/close if referenced by investments
+  const allPlans = await db.select({ id: investmentPlansTable.id, name: investmentPlansTable.name }).from(investmentPlansTable);
+  const legacyIds = allPlans.filter((p) => LEGACY_PLAN_NAMES.includes(p.name));
+
+  for (const plan of legacyIds) {
+    const [refs] = await db
+      .select({ c: count() })
+      .from(userInvestmentsTable)
+      .where(eq(userInvestmentsTable.planId, plan.id));
+
+    if ((refs?.c ?? 0) > 0) {
+      // Financial references exist — archive, never delete or rename
+      await db
+        .update(investmentPlansTable)
+        .set({ isActive: false, status: "closed" } as any)
+        .where(eq(investmentPlansTable.id, plan.id));
+      console.log(`[seed] Archived legacy plan "${plan.name}" (has investments) ✓`);
+    } else {
+      // Unused — safe to remove from catalog
+      await db.delete(investmentPlansTable).where(eq(investmentPlansTable.id, plan.id));
+      console.log(`[seed] Removed unused legacy plan "${plan.name}" ✓`);
     }
   }
 
@@ -547,19 +610,19 @@ Start your real estate investment journey with EstateFund today.`,
 
 **Newly Added Properties:**
 
-**Skyline Residences** - Dubai Marina, UAE
+**Harborview Terrace** - Boston Seaport, USA
 Type: Residential | Min: $500 | Duration: 365 days
-Premium waterfront tower with marina views.
+Waterfront residential community with harbor views.
 
-**The Meridian Tower** - Canary Wharf, London, UK
+**Cypress Gate Offices** - Austin Domain District, USA
 Type: Commercial | Min: $1,000 | Duration: 730 days
-Grade A office tower in a prime financial district.
+Class A office campus in a tech hub.
 
-**Villa Serenata** - Seminyak, Bali, Indonesia
+**Palm Grove Resort** - Nusa Dua, Bali, Indonesia
 Type: Hospitality | Min: $250 | Duration: 180 days
-Boutique villa generating luxury vacation rental income.
+Beachfront resort generating luxury vacation rental income.
 
-**Oakwood Promenade** - Upper West Side, New York, USA
+**Riverwalk Commons** - San Antonio Pearl District, USA
 Type: Mixed-Use | Min: $1,000 | Duration: 540 days
 Ground-floor retail with luxury residential units.
 
@@ -779,17 +842,17 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
     { userId: demo.id, network: "BSC", address: "0x742d35Cc6634C0532925a3b8D4C9F7f4b62Ee8E" },
   ]);
 
-  // Look up current real-estate property names (may have been migrated from old crypto names)
+  // Look up current real-estate property names (new catalog)
   const [plan1] = await db
     .select()
     .from(investmentPlansTable)
-    .where(eq(investmentPlansTable.name, "Skyline Residences"))
+    .where(eq(investmentPlansTable.name, "Harborview Terrace"))
     .limit(1);
 
   const [plan2] = await db
     .select()
     .from(investmentPlansTable)
-    .where(eq(investmentPlansTable.name, "The Meridian Tower"))
+    .where(eq(investmentPlansTable.name, "Cypress Gate Offices"))
     .limit(1);
 
   if (plan1 && plan2) {
@@ -852,7 +915,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "investment",
       amount: "2000.00000000",
       status: "completed",
-      note: `Invested 2000 USDT in Skyline Residences`,
+      note: `Invested 2000 USDT in Harborview Terrace`,
       createdAt: new Date(thirtyDaysAgo.getTime() + 3 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -860,7 +923,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "investment",
       amount: "5000.00000000",
       status: "completed",
-      note: `Invested 5000 USDT in The Meridian Tower`,
+      note: `Invested 5000 USDT in Cypress Gate Offices`,
       createdAt: new Date(thirtyDaysAgo.getTime() + 3 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -868,7 +931,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "earning",
       amount: "55.00000000",
       status: "completed",
-      note: "Daily ROI from Skyline Residences",
+      note: "Daily ROI from Harborview Terrace",
       createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
     } as any,
     {
@@ -876,7 +939,7 @@ async function seedDemoUser(db: ReturnType<typeof drizzle<typeof schema>>) {
       type: "earning",
       amount: "142.50000000",
       status: "completed",
-      note: "Daily ROI from The Meridian Tower",
+      note: "Daily ROI from Cypress Gate Offices",
       createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
     } as any,
     {

@@ -16,7 +16,9 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 function getInitialTheme(): Theme {
   try {
-    const stored = localStorage.getItem("estatefund-theme") || localStorage.getItem("wexora-theme");
+    const stored =
+      localStorage.getItem("estatefund-theme") ||
+      localStorage.getItem("wexora-theme");
     if (stored === "dark" || stored === "light") return stored;
   } catch {}
   return "light";

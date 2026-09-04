@@ -1,7 +1,7 @@
 /**
  * EmailService — EstateFund transactional email via Resend.
  *
- * All emails are sent from:  EstateFund <noreply@mail.wexoraglobal.com>
+ * All emails are sent from:  EstateFund <noreply@mail.estatefund.app>
  *
  * If RESEND_API_KEY is absent the service logs a warning and no-ops every send,
  * so the app starts cleanly in environments without email configured.
@@ -19,11 +19,11 @@ if (apiKey) {
   logger.warn("RESEND_API_KEY is not set — emails will be skipped");
 }
 
-const FROM = process.env.EMAIL_FROM ?? "noreply@mail.wexoraglobal.com";
+const FROM = process.env.EMAIL_FROM ?? "noreply@mail.estatefund.app";
 const FROM_DISPLAY = `EstateFund <${FROM}>`;
-const SUPPORT_EMAIL = "support@wexoraglobal.com";
-const APP_URL = process.env.APP_URL ?? "https://wexoraglobal.com";
-const LOGO_URL = "https://wexoraglobal.com/wx-logo.png";
+const SUPPORT_EMAIL = "support@estatefund.app";
+const APP_URL = process.env.APP_URL ?? "https://estatefund.app";
+const LOGO_URL = "https://estatefund.app/logo.png";
 
 // ── Base HTML template ────────────────────────────────────────────────────────
 function baseTemplate(title: string, body: string): string {

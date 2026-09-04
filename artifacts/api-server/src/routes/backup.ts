@@ -36,12 +36,12 @@ const router: IRouter = Router();
 // ─── Backup format constants ────────────────────────────────────────────────
 const BACKUP_VERSION = "1.0.0";
 const SCHEMA_VERSION = "2.0.0";
-const PLATFORM_NAME = "Wexora Global";
+const PLATFORM_NAME = "EstateFund";
 
 // Encryption key derived from SESSION_SECRET (never stored in backup)
 function getEncryptionKey(): Buffer {
-  const secret = process.env.SESSION_SECRET || process.env.DATABASE_URL || "wexora-backup-fallback-key";
-  return crypto.scryptSync(secret, "wexora-backup-salt-v1", 32);
+  const secret = process.env.SESSION_SECRET || process.env.DATABASE_URL || "estatefund-backup-fallback-key";
+  return crypto.scryptSync(secret, "estatefund-backup-salt-v1", 32);
 }
 
 function encrypt(data: Buffer): { iv: string; encrypted: string } {
@@ -177,7 +177,7 @@ router.post("/admin/backup/create", requireAdmin, async (req, res): Promise<void
 
     const envelopeJson = JSON.stringify(envelope);
     const fileSize = Buffer.byteLength(envelopeJson, "utf-8");
-    const fileName = `wexora-backup-${new Date().toISOString().replace(/[:.]/g, "-")}.wexora`;
+    const fileName = `estatefund-backup-${new Date().toISOString().replace(/[:.]/g, "-")}.estatefund`;
 
     // Update log
     await db
@@ -399,7 +399,7 @@ router.post("/admin/backup/restore", requireAdmin, async (req, res): Promise<voi
     const preRestoreCompressed = gzipSync(Buffer.from(preRestoreJson, "utf-8"));
     const { iv: preIv, encrypted: preEncrypted } = encrypt(preRestoreCompressed);
     const preRestoreChecksum = crypto.createHash("sha256").update(preRestoreCompressed).digest("hex");
-    const preRestoreFileName = `pre-restore-${new Date().toISOString().replace(/[:.]/g, "-")}.wexora`;
+    const preRestoreFileName = `pre-restore-${new Date().toISOString().replace(/[:.]/g, "-")}.estatefund`;
 
     // Log the pre-restore backup
     const [preLog] = await db

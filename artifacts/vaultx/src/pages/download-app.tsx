@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-const VERSION_KEY = "wexora-installed-version";
+const VERSION_KEY = "estatefund-installed-version";
 
 interface AppInfo {
   appName: string; version: string; size: string; lastUpdated: string;

@@ -229,7 +229,7 @@ function AboutSection() {
         { label: "Mission Statement", field: "about_mission", placeholder: "Our mission is...", multiline: true },
         { label: "Company Story", field: "about_story", placeholder: "Founded in...", multiline: true },
         { label: "Vision", field: "about_vision", placeholder: "Our vision is...", multiline: true },
-        { label: "Contact Email", field: "about_email", placeholder: "info@wexoraglobal.com" },
+        { label: "Contact Email", field: "about_email", placeholder: "info@estatefund.app" },
         { label: "Headquarters", field: "about_headquarters", placeholder: "Dubai, UAE" },
         { label: "Founded Year", field: "about_founded", placeholder: "2024" },
       ].map(({ label, field, placeholder, multiline }) => (

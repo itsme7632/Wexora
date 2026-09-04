@@ -128,15 +128,15 @@ export default function SettingsPage() {
               icon={KeyRound}
               iconColor="bg-gradient-to-br from-blue-500 to-indigo-500"
               label="Password & 2FA"
-              description="Manage your password, two-factor authentication, and active sessions"
+              description="Change your password and manage two-factor authentication"
               onClick={() => setLocation("/security")}
             />
             <SettingsRow
               icon={Shield}
               iconColor="bg-gradient-to-br from-violet-500 to-purple-500"
-              label="Account Security"
-              description="Review security settings and session activity"
-              onClick={() => setLocation("/security")}
+              label="Identity Verification (KYC)"
+              description="Verify your identity to unlock full account access"
+              onClick={() => setLocation("/kyc")}
             />
           </div>
         </div>

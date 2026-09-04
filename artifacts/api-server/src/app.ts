@@ -55,7 +55,7 @@ const PgSession = connectPgSimple(session);
 app.use(
   session({
     store: new PgSession({ pool, createTableIfMissing: true }),
-    secret: process.env.SESSION_SECRET ?? "wexora-secret-change-in-production",
+    secret: process.env.SESSION_SECRET ?? "estatefund-secret-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -106,7 +106,7 @@ const MAINTENANCE_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Maintenance — Wexora Global</title>
+  <title>Maintenance — EstateFund</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -141,21 +141,21 @@ const MAINTENANCE_HTML = `<!DOCTYPE html>
 </head>
 <body>
   <div class="card">
-    <div class="logo">Wexora Global</div>
-    <div class="tagline">Crypto Investment Platform</div>
+    <div class="logo">EstateFund</div>
+    <div class="tagline">Real Estate Investment Platform</div>
     <div class="icon-wrap" style="position:relative">
       <div class="pulse"></div>
       <span class="wrench">\u2699\uFE0F</span>
     </div>
     <h1>Scheduled Maintenance</h1>
-    <p class="msg">Wexora Global is currently undergoing scheduled maintenance to improve our platform.</p>
+    <p class="msg">EstateFund is currently undergoing scheduled maintenance to improve our platform.</p>
     {{ETA}}
     <div class="divider"></div>
     <div class="reassure">
       <strong>Your account, investments, and balances remain safe.</strong><br/>
       No action is required on your part. We expect to be back online shortly.
     </div>
-    <div class="footer">&copy; ${new Date().getFullYear()} Wexora Global. All rights reserved.</div>
+    <div class="footer">&copy; ${new Date().getFullYear()} EstateFund. All rights reserved.</div>
   </div>
 </body>
 </html>`;
@@ -198,7 +198,7 @@ async function maintenanceMiddleware(req: Request, res: Response, next: NextFunc
         res.status(503).json({
           maintenance: true,
           error: "Service Unavailable",
-          message: "Wexora Global is currently undergoing scheduled maintenance. Your account, investments, and balances remain safe. Please try again shortly.",
+          message: "EstateFund is currently undergoing scheduled maintenance. Your account, investments, and balances remain safe. Please try again shortly.",
         });
         return;
       }

@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import { I18nProvider } from "@/lib/i18n";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SplashScreen } from "@/components/SplashScreen";
 import { setBaseUrl } from "@workspace/api-client-react";
@@ -78,11 +79,11 @@ function detectIsAppMode(): boolean {
 // Only show splash once per session, never on desktop browser
 const IS_APP_MODE = detectIsAppMode();
 const SPLASH_ALREADY_SHOWN = (() => {
-  try { return !!sessionStorage.getItem("wexora-splash-shown"); } catch { return false; }
+  try { return !!sessionStorage.getItem("estatefund-splash-shown"); } catch { return false; }
 })();
 const SHOW_SPLASH = IS_APP_MODE && !SPLASH_ALREADY_SHOWN;
 if (SHOW_SPLASH) {
-  try { sessionStorage.setItem("wexora-splash-shown", "1"); } catch {}
+  try { sessionStorage.setItem("estatefund-splash-shown", "1"); } catch {}
 }
 
 // ─── KYC route guard ──────────────────────────────────────────────────────────
@@ -478,6 +479,16 @@ function AppContent() {
 }
 
 function App() {
+  return (
+    <ThemeProvider>
+      <I18nProvider>
+        <AppShell />
+      </I18nProvider>
+    </ThemeProvider>
+  );
+}
+
+function AppShell() {
   const [showSplash, setShowSplash] = useState(SHOW_SPLASH);
   const [contentVisible, setContentVisible] = useState(!SHOW_SPLASH);
 
@@ -485,7 +496,7 @@ function App() {
   const handleSplashComplete = () => setShowSplash(false);
 
   return (
-    <ThemeProvider>
+    <>
       {showSplash && (
         <SplashScreen
           onFadeStart={handleFadeStart}
@@ -500,7 +511,7 @@ function App() {
       >
         <AppContent />
       </div>
-    </ThemeProvider>
+    </>
   );
 }
 

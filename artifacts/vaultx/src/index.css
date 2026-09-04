@@ -398,6 +398,41 @@ html, body, #root {
   max-width: 100vw;
 }
 
+/* ── RTL support ───────────────────────────────────────────────── */
+/* When the app language is RTL (Arabic/Urdu), flip directional layout.
+   Tailwind logical utilities (ps-*, pe-*, ms-*, me-*, text-start/end) are
+   preferred in components; these rules cover the remaining hardcoded cases. */
+html[dir="rtl"] .lg\:pl-\[260px\] {
+  padding-left: 0;
+  padding-right: 260px;
+}
+
+html[dir="rtl"] .lg\:fixed.lg\:left-0 {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] .translate-x-0,
+html[dir="rtl"] .-translate-x-full {
+  transform: none;
+}
+
+html[dir="rtl"] .drawer-open {
+  transform: translateX(0);
+}
+
+html[dir="rtl"] .drawer-closed {
+  transform: translateX(100%);
+}
+
+html[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+html[dir="rtl"] .text-right {
+  text-align: left;
+}
+
 img, video, svg {
   max-width: 100%;
   height: auto;

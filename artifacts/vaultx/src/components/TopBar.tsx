@@ -5,6 +5,7 @@ import { useTheme } from "@/lib/theme";
 import { useQuery } from "@tanstack/react-query";
 import { HamburgerButton } from "@/components/Sidebar";
 import { NotificationPanel } from "@/components/NotificationPanel";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 interface TopBarProps {
   onMenuOpen?: () => void;
@@ -47,6 +48,9 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1">
+            {/* Language selector */}
+            <LanguageSelector />
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}

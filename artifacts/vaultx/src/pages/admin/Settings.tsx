@@ -65,12 +65,12 @@ export default function SettingsSection() {
       <Section icon={Globe} title="Branding" color="text-primary">
         <Field label="Platform Name" value={form.platform_name} onChange={set("platform_name")} placeholder="Wexora" />
         <Field label="Platform Logo URL" value={form.platform_logo_url} onChange={set("platform_logo_url")} placeholder="https://..." />
-        <Field label="Platform Website URL" value={form.platform_url} onChange={set("platform_url")} placeholder="https://wexoraglobal.com" />
+        <Field label="Platform Website URL" value={form.platform_url} onChange={set("platform_url")} placeholder="https://estatefund.app" />
       </Section>
 
       {/* ── Support ── */}
       <Section icon={MessageCircle} title="Support Contacts" color="text-blue-600">
-        <Field label="Support Email" value={form.support_email} onChange={set("support_email")} placeholder="support@wexora.com" />
+        <Field label="Support Email" value={form.support_email} onChange={set("support_email")} placeholder="support@estatefund.app" />
         <Field label="Telegram Support Link" value={form.support_telegram} onChange={set("support_telegram")} placeholder="https://t.me/..." />
         <Field label="Telegram Community" value={form.support_telegram_group} onChange={set("support_telegram_group")} placeholder="https://t.me/..." />
         <Field label="WhatsApp Number" value={form.support_whatsapp} onChange={set("support_whatsapp")} placeholder="+1234567890" />

@@ -1,7 +1,19 @@
-const MUTE_KEY = "wexora-notifications-muted";
+const MUTE_KEY = "estatefund-notifications-muted";
+const LEGACY_MUTE_KEY = "wexora-notifications-muted";
 
 export function isNotificationMuted(): boolean {
-  try { return localStorage.getItem(MUTE_KEY) === "true"; } catch { return false; }
+  try {
+    const current = localStorage.getItem(MUTE_KEY);
+    if (current !== null) return current === "true";
+    // Migrate value from the legacy pre-rebrand key
+    const legacy = localStorage.getItem(LEGACY_MUTE_KEY);
+    if (legacy !== null) {
+      localStorage.setItem(MUTE_KEY, legacy);
+      localStorage.removeItem(LEGACY_MUTE_KEY);
+      return legacy === "true";
+    }
+    return false;
+  } catch { return false; }
 }
 
 export function setNotificationMuted(muted: boolean): void {

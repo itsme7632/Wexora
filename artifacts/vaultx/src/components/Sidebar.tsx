@@ -7,21 +7,22 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /* ─── Navigation items ──────────────────────────────────────────────────── */
 
 const MAIN_ITEMS = [
-  { href: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/wallet", icon: Wallet, label: "Wallet" },
-  { href: "/investments", icon: TrendingUp, label: "Investments" },
-  { href: "/portfolio", icon: PieChart, label: "My Investments" },
+  { href: "/", icon: LayoutDashboard, labelKey: "dashboard" as const },
+  { href: "/wallet", icon: Wallet, labelKey: "wallet" as const },
+  { href: "/investments", icon: TrendingUp, labelKey: "investments" as const },
+  { href: "/portfolio", icon: PieChart, labelKey: "myInvestments" as const },
 ];
 
 const ACCOUNT_ITEMS = [
-  { href: "/profile", icon: User, label: "Profile" },
-  { href: "/notifications", icon: Bell, label: "Notifications" },
-  { href: "/settings", icon: Settings, label: "Settings" },
+  { href: "/profile", icon: User, labelKey: "profile" as const },
+  { href: "/notifications", icon: Bell, labelKey: "notifications" as const },
+  { href: "/settings", icon: Settings, labelKey: "settings" as const },
 ];
 
 /* ─── Sidebar content (shared between desktop and mobile) ───────────────── */
@@ -29,6 +30,7 @@ const ACCOUNT_ITEMS = [
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useI18n();
   const [location] = useLocation();
 
   const isActive = (href: string) => {
@@ -65,7 +67,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </p>
 
         <div className="space-y-0.5">
-          {MAIN_ITEMS.map(({ href, icon: Icon, label }) => {
+          {MAIN_ITEMS.map(({ href, icon: Icon, labelKey }) => {
+            const label = t[labelKey];
             const active = isActive(href);
             return (
               <Link
@@ -100,7 +103,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </p>
 
         <div className="space-y-0.5">
-          {ACCOUNT_ITEMS.map(({ href, icon: Icon, label }) => {
+          {ACCOUNT_ITEMS.map(({ href, icon: Icon, labelKey }) => {
+            const label = t[labelKey];
             const active = isActive(href);
             return (
               <Link
@@ -195,7 +199,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13px] font-medium text-red-500/60 dark:text-red-400/50 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/5 transition-all"
         >
           <LogOut size={18} strokeWidth={1.5} className="shrink-0" />
-          <span>Sign out</span>
+          <span>{t.signOut}</span>
         </button>
       </div>
     </div>
@@ -216,6 +220,8 @@ export function DesktopSidebar() {
 
 export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const drawerRef = useRef<HTMLDivElement>(null);
+  const { dir } = useI18n();
+  const isRtl = dir === "rtl";
 
   useEffect(() => {
     if (!open) return;
@@ -249,8 +255,15 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
       <div
         ref={drawerRef}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[280px] bg-sidebar shadow-2xl lg:hidden transition-transform duration-300 ease-out flex flex-col overflow-hidden",
-          open ? "translate-x-0" : "-translate-x-full"
+          "fixed inset-y-0 z-50 w-[280px] bg-sidebar shadow-2xl lg:hidden transition-transform duration-300 ease-out flex flex-col overflow-hidden",
+          isRtl ? "right-0" : "left-0",
+          open
+            ? isRtl
+              ? "translate-x-0"
+              : "translate-x-0"
+            : isRtl
+              ? "translate-x-full"
+              : "-translate-x-full"
         )}
         role="dialog"
         aria-modal="true"
