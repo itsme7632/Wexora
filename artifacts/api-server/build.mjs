@@ -18,6 +18,8 @@ async function buildAll() {
     entryPoints: [
       path.resolve(artifactDir, "src/index.ts"),
       path.resolve(artifactDir, "src/env-preload.ts"),
+      // Serverless adapter for the hosting platform's api/ function runtime.
+      path.resolve(artifactDir, "src/serverless.ts"),
     ],
     platform: "node",
     bundle: true,

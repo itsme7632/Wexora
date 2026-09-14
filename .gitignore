@@ -48,3 +48,6 @@ Thumbs.db
 .cache/
 .local/
 .env.local
+
+# Generated serverless API bundle (built fresh by the hosting build command)
+/api/
