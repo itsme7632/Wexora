@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://57ufsne.sisko.replit.dev/sitemap.xml

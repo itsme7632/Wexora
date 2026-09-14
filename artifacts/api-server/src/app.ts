@@ -241,6 +241,14 @@ async function maintenanceMiddleware(req: Request, res: Response, next: NextFunc
 app.use(maintenanceMiddleware);
 app.use("/api", router);
 
+// API 404 fallback — must come after the API router. Without this, unmatched
+// /api/* requests fall through to the SPA-fallback logic below, which skips
+// /api paths and never responds, leaving browser fetches hanging forever
+// (Express 5 does not auto-404 unmatched paths).
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
 // ── Serve frontend static assets ──────────────────────────────────────────────
 const publicDir = path.resolve(__dirname, "../../vaultx/dist/public");
 app.use(express.static(publicDir));

@@ -17,6 +17,9 @@ const sslConfig =
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  // Fail fast (10s) when the database is unreachable instead of hanging
+  // every in-flight request indefinitely on a network blip.
+  connectionTimeoutMillis: 10_000,
   ...sslConfig,
 });
 export const db = drizzle(pool, { schema });

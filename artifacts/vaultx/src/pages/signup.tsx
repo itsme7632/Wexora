@@ -120,7 +120,7 @@ export default function SignupPage() {
     setUsernameStatus("checking");
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/auth/check-username/${username}`, { credentials: "include" });
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`, { credentials: "include" });
         const data = await res.json();
         setUsernameStatus(data.available ? "available" : "taken");
       } catch { setUsernameStatus("idle"); }

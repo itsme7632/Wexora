@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, Redirect, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 import { AuthLayout } from "@/components/AuthLayout";
 
 const schema = z.object({
@@ -33,6 +34,7 @@ async function postJson(url: string, body: object) {
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -101,6 +103,13 @@ export default function LoginPage() {
     } finally {
       setResending(false);
     }
+  }
+
+  // Already signed in → always land in the app. This also heals the race where
+  // the router navigates to "/" before the auth store has propagated the fresh
+  // session and ProtectedRoute briefly bounces back to /login.
+  if (!authLoading && isAuthenticated) {
+    return <Redirect to="/" />;
   }
 
   // ── Unverified email state ──────────────────────────────────────────────
