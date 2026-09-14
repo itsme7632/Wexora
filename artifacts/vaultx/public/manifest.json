@@ -1,23 +1,23 @@
 {
-  "name": "Wexora Global",
-  "short_name": "Wexora",
-  "description": "Global opportunities. Smarter growth.",
+  "name": "EstateFund",
+  "short_name": "EstateFund",
+  "description": "Premium real estate investment opportunities.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#060d1a",
-  "theme_color": "#060d1a",
+  "theme_color": "#0a1628",
   "lang": "en",
   "scope": "/",
   "icons": [
     {
-      "src": "/wx-logo.png",
+      "src": "/ef-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/wx-logo.png",
+      "src": "/ef-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -26,9 +26,9 @@
   "categories": ["finance", "business"],
   "screenshots": [
     {
-      "src": "/wx-social.png",
+      "src": "/ef-social.png",
       "type": "image/png",
-      "label": "Wexora Global — Digital Investment Platform"
+      "label": "EstateFund — Real Estate Investment Platform"
     }
   ]
 }

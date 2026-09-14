@@ -48,8 +48,8 @@ function ForceUpdateScreen({ appInfo, activeSources, onDownload, downloading }: 
         <AlertTriangle size={36} className="text-amber-500" />
       </div>
       <h1 className="text-2xl font-black text-foreground mb-2">Update Required</h1>
-      <p className="text-muted-foreground text-sm mb-1">Wexora <span className="font-bold text-amber-500">v{appInfo.version}</span> is now available.</p>
-      <p className="text-muted-foreground text-xs mb-8">Please update the app to continue using Wexora.</p>
+      <p className="text-muted-foreground text-sm mb-1">EstateFund <span className="font-bold text-amber-500">v{appInfo.version}</span> is now available.</p>
+      <p className="text-muted-foreground text-xs mb-8">Please update the app to continue using EstateFund.</p>
       <div className="w-full max-w-sm space-y-3">
         {activeSources.map(({ key, label, urlKey, gradient }) => {
           const url = appInfo[urlKey] as string;
@@ -119,9 +119,9 @@ export default function DownloadAppPage() {
           <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle at 30% 50%, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
           <div className="relative px-4 pt-8 pb-10 lg:px-12 lg:pt-14 lg:pb-16 max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-5">
-              <img src="/wx-logo.png" alt="Wexora" className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl shadow-xl object-cover border border-white/20" />
+              <img src="/ef-icon.png" alt="EstateFund" className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl shadow-xl object-cover border border-white/20" />
               <div>
-                <h1 className="text-2xl lg:text-3xl font-black text-white">{appInfo?.appName ?? "Wexora"}</h1>
+                <h1 className="text-2xl lg:text-3xl font-black text-white">{appInfo?.appName ?? "EstateFund"}</h1>
                 <p className="text-emerald-300/60 text-sm mt-0.5">Crypto Investment Platform</p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function DownloadAppPage() {
             ) : isUpToDate ? (
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex gap-4 items-center animate-fade-in">
                 <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0"><CheckCircle2 size={22} className="text-emerald-500" /></div>
-                <div><p className="text-sm font-bold text-foreground">You are using the latest version</p><p className="text-xs text-muted-foreground mt-0.5">Wexora v{installedVersion} is up to date.</p></div>
+                <div><p className="text-sm font-bold text-foreground">You are using the latest version</p><p className="text-xs text-muted-foreground mt-0.5">EstateFund v{installedVersion} is up to date.</p></div>
               </div>
             ) : (
               <div className="bg-primary/10 border border-primary/20 rounded-2xl p-5 flex gap-4 items-center animate-fade-in">
@@ -306,7 +306,7 @@ export default function DownloadAppPage() {
                 "Open your device Settings → Security.",
                 'Enable "Install from Unknown Sources" or "Allow from this source".',
                 "Open the downloaded APK file and tap Install.",
-                "Launch Wexora and sign in to your account.",
+                "Launch EstateFund and sign in to your account.",
               ].map((step, i) => (
                 <div key={i} className="flex gap-3 items-start">
                   <span className="w-6 h-6 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>

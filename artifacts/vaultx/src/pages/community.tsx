@@ -1118,7 +1118,7 @@ export default function CommunityPage() {
                 ) : (
                   <div className="px-4 py-1.5 bg-blue-50/60 dark:bg-blue-950/10 border-b border-blue-200/40 dark:border-blue-800/20 shrink-0">
                     <p className="text-[11px] text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
-                      <Megaphone size={11} /> Official announcements from the Wexora team
+                      <Megaphone size={11} /> Official announcements from the EstateFund team
                     </p>
                   </div>
                 )}

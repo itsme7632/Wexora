@@ -139,7 +139,7 @@ export function AnnouncementPopup() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-0.5">
-              Wexora Global
+              EstateFund
             </p>
             <h2 className="text-base font-bold text-foreground leading-tight truncate">
               {announcement.title}

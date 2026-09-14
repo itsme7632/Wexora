@@ -456,7 +456,7 @@ export default function SupportPage() {
                 <div>
                   <p className="text-xs font-bold text-foreground mb-0.5">Support Policy</p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Our team will never ask for your password, private keys, or 2FA codes. Always verify you're communicating through official Wexora channels.
+                    Our team will never ask for your password, private keys, or 2FA codes. Always verify you're communicating through official EstateFund channels.
                   </p>
                 </div>
               </div>

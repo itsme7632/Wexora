@@ -33,8 +33,8 @@ export function SplashScreen({ onFadeStart, onComplete }: SplashScreenProps) {
           transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
-        <div className="w-16 h-16 rounded-2xl bg-blue-500 flex items-center justify-center shadow-xl shadow-blue-500/20">
-          <span className="text-white font-black text-2xl">W</span>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20" style={{ background: "linear-gradient(135deg, #34d399 0%, #10b981 55%, #047857 100%)" }}>
+          <span className="text-white font-black text-2xl">EF</span>
         </div>
       </div>
 
@@ -47,7 +47,7 @@ export function SplashScreen({ onFadeStart, onComplete }: SplashScreenProps) {
           transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s",
         }}
       >
-        Wexora Global
+        EstateFund
       </h1>
 
       {/* Subtitle */}
@@ -58,7 +58,7 @@ export function SplashScreen({ onFadeStart, onComplete }: SplashScreenProps) {
           transition: "opacity 0.4s ease 0.3s",
         }}
       >
-        Wealth Management
+        Real Estate Investments
       </p>
     </div>
   );

@@ -66,7 +66,7 @@ export default function ReferralsPage() {
 
   const referralLink = stats?.code ? `${window.location.origin}/signup?ref=${stats.code}` : null;
   const handleCopy = () => { if (!referralLink) return; navigator.clipboard.writeText(referralLink); setCopied(true); setTimeout(() => setCopied(false), 2000); };
-  const handleShare = () => { if (!referralLink) return; window.open(`https://wa.me/?text=${encodeURIComponent(`Join Wexora and start earning! Sign up with my link:\n${referralLink}`)}`, "_blank"); };
+  const handleShare = () => { if (!referralLink) return; window.open(`https://wa.me/?text=${encodeURIComponent(`Join EstateFund and start investing in real estate! Sign up with my link:\n${referralLink}`)}`, "_blank"); };
 
   const pendingEarnings = (stats as any)?.pendingEarnings ?? 0;
   const tierLabel = (stats as any)?.tierLabel ?? "Bronze";

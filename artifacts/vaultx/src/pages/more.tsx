@@ -11,7 +11,7 @@ export default function MorePage() {
   const [, setLocation] = useLocation();
   const { data: appInfo } = useQuery({ queryKey: ["app-info"], queryFn: () => fetch("/api/app-info", { credentials: "include" }).then(r => r.json()), staleTime: 60000 });
   const { data: settings } = useQuery({ queryKey: ["public-settings"], queryFn: () => fetch("/api/settings/public", { credentials: "include" }).then(r => r.json()), staleTime: 60000 });
-  const platformName = settings?.platform_name || "Wexora";
+  const platformName = settings?.platform_name || "EstateFund";
   const appVersion = appInfo?.version ? `v${appInfo.version}` : "v3.0";
 
   const sections = [
@@ -23,7 +23,7 @@ export default function MorePage() {
     ]},
     { title: "Information & Legal", items: [
       { icon: HelpCircle, label: "FAQ", description: "Frequently asked questions", href: "/faq" },
-      { icon: Info, label: "About Wexora", description: "Mission, features and platform stats", href: "/about" },
+      { icon: Info, label: "About EstateFund", description: "Mission, features and platform stats", href: "/about" },
       { icon: Lock, label: "Privacy Policy", description: "How we protect your data", href: "/privacy" },
       { icon: FileText, label: "Terms & Conditions", description: "Platform usage rules", href: "/terms" },
       { icon: Download, label: "Download App", description: "Get the latest Android APK", href: "/download-app" },

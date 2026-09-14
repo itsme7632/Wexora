@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SplashScreen } from "@/components/SplashScreen";
-import { setBaseUrl } from "@workspace/api-client-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Wrench, RefreshCw, MessageCircle, Phone, Clock } from "lucide-react";
@@ -52,8 +51,6 @@ import FaqPage from "@/pages/faq";
 
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 import { ScrollToTop } from "@/components/ScrollToTop";
-
-setBaseUrl(null);
 
 // ─── Detect app mode synchronously (runs once at module load) ─────────────────
 function detectIsAppMode(): boolean {
@@ -272,7 +269,7 @@ function useCountdown(isoEta: string) {
 
 // ─── Maintenance page ─────────────────────────────────────────────────────────
 function MaintenancePage({ settings }: { settings: Record<string, string> | undefined }) {
-  const platformName    = settings?.platform_name       ?? "Wexora Global";
+  const platformName    = settings?.platform_name       ?? "EstateFund";
   const telegramLink    = settings?.support_telegram_group ?? settings?.support_telegram ?? "";
   const whatsappLink    = settings?.support_whatsapp_community ?? settings?.support_whatsapp ?? "";
   const supportEmail    = settings?.support_email       ?? "";
@@ -283,7 +280,7 @@ function MaintenancePage({ settings }: { settings: Record<string, string> | unde
   const etaDate = eta ? new Date(eta) : null;
   const etaValid = etaDate && !isNaN(etaDate.getTime());
 
-  const defaultMsg = "Wexora Global is currently undergoing scheduled maintenance to improve platform performance and security.";
+  const defaultMsg = "EstateFund is currently undergoing scheduled maintenance to improve platform performance and security.";
 
   const handleRefresh = () => window.location.reload();
 
@@ -295,8 +292,8 @@ function MaintenancePage({ settings }: { settings: Record<string, string> | unde
       {/* Logo */}
       <div className="mb-8">
         <img
-          src="/wx-icon.png"
-          alt="Wexora Global"
+          src="/ef-icon.png"
+          alt="EstateFund"
           className="w-16 h-16 rounded-2xl mx-auto mb-3 shadow-lg"
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />

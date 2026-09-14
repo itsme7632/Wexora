@@ -132,7 +132,7 @@ export default function NotificationsPage() {
           <div className="v3-card p-16 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mx-auto mb-4"><Inbox size={26} className="text-muted-foreground" /></div>
             <p className="font-bold text-foreground">{filter === "unread" ? "All caught up!" : "No notifications yet"}</p>
-            <p className="text-sm text-muted-foreground mt-1.5 max-w-[220px] mx-auto">{filter === "unread" ? "You have no unread notifications" : "Activity will appear here as you use Wexora."}</p>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-[220px] mx-auto">{filter === "unread" ? "You have no unread notifications" : "Activity will appear here as you use EstateFund."}</p>
             {filter === "unread" && unreadCount === 0 && allItems.length > 0 && <Button variant="outline" size="sm" className="mt-4 rounded-xl" onClick={() => setFilter("all")}>View all</Button>}
           </div>
         ) : (

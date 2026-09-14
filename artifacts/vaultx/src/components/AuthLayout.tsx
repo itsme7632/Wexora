@@ -8,9 +8,9 @@ interface AuthLayoutProps {
 }
 
 /**
- * Wexora V2 Authentication Layout
+ * EstateFund Authentication Layout
  *
- * Desktop: Two-panel layout — left branding panel with Wexora identity, right form panel
+ * Desktop: Two-panel layout — left branding panel with EstateFund identity, right form panel
  * Mobile: Full-width with compact brand header + form below
  */
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {

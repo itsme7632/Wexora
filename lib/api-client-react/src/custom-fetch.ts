@@ -299,6 +299,16 @@ async function parseSuccessBody(
     return null;
   }
 
+  // Guard: a JSON API response must never be HTML. Static hosts commonly
+  // SPA-fallback unknown paths (including /api/*) with index.html and a
+  // 200 status. Returning that HTML as "data" has previously crashed the
+  // app (e.g. .filter on a string) — surface it as a proper API error so
+  // callers handle it like any other request failure instead.
+  const mediaType = getMediaType(response.headers);
+  if (mediaType === "text/html") {
+    throw new ApiError(response, null, requestInfo);
+  }
+
   const effectiveType =
     responseType === "auto" ? inferResponseType(response) : responseType;
 
