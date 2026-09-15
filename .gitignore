@@ -51,3 +51,6 @@ Thumbs.db
 
 # Generated serverless API bundle (built fresh by the hosting build command)
 /api/
+
+# Generated Vercel API deploy bundle (built by scripts/build-api-deploy.sh)
+deploy/api-func/api/
