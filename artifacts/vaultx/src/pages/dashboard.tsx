@@ -9,6 +9,7 @@ import {
   useGetDashboardSummary, getGetDashboardSummaryQueryKey,
   useGetInvestmentPlans, getGetInvestmentPlansQueryKey,
   useGetUserInvestments, getGetUserInvestmentsQueryKey,
+  useGetWallet, getGetWalletQueryKey,
 } from "@workspace/api-client-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -78,6 +79,10 @@ export default function DashboardPage() {
   const { data: investments } = useGetUserInvestments({
     query: { queryKey: getGetUserInvestmentsQueryKey(), staleTime: 30000 },
   });
+  // Authoritative available balance — same wallet query/source as the Wallet page
+  const { data: wallet, isLoading: walletLoading } = useGetWallet({
+    query: { queryKey: getGetWalletQueryKey(), staleTime: 15000 },
+  });
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -120,6 +125,21 @@ export default function DashboardPage() {
                 {formatUSDT(summary?.activeInvestmentsValue ?? 0)}
               </p>
             )}
+
+            {/* Available Balance — cash currently in the wallet (same source as Wallet page) */}
+            <div className="flex items-center justify-between gap-2 bg-white/10 rounded-xl px-3.5 py-2.5 backdrop-blur-sm mt-1 mb-3 md:mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <Wallet size={12} className="text-emerald-200 shrink-0" />
+                <p className="text-[9px] md:text-[10px] text-white/55 uppercase tracking-wider font-medium truncate">Available Balance</p>
+              </div>
+              {walletLoading ? (
+                <Skeleton className="h-5 w-24 md:w-28 bg-white/15" />
+              ) : (
+                <p className="text-sm md:text-lg font-bold text-white tabular-nums">
+                  {formatUSDT(wallet?.balance ?? 0)}
+                </p>
+              )}
+            </div>
 
             {/* KPI row — 2 cols mobile, 4 cols desktop */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 md:mt-4">

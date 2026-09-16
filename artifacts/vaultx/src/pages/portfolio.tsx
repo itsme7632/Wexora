@@ -8,6 +8,7 @@ import {
   useGetUserInvestments, getGetUserInvestmentsQueryKey,
   useClaimEarnings,
   useGetDashboardSummary, getGetDashboardSummaryQueryKey,
+  getGetWalletQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
@@ -313,6 +314,7 @@ export default function PortfolioPage() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: getGetUserInvestmentsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetWalletQueryKey() });
     queryClient.invalidateQueries({ queryKey: ["earnings-history"] });
   };
 

@@ -126,7 +126,7 @@ export default function OpportunityDetailPage() {
   if (isLoading) {
     return (
       <SubPageLayout title="Property" onBack={() => navigate("/investments")}>
-        <div className="max-w-6xl mx-auto px-4 py-5 space-y-4">
+        <div className="space-y-4">
           <Skeleton className="h-72 rounded-2xl" />
           <div className="grid lg:grid-cols-5 gap-5">
             <div className="lg:col-span-3 space-y-4"><Skeleton className="h-48 rounded-2xl" /><Skeleton className="h-32 rounded-2xl" /></div>
@@ -140,7 +140,7 @@ export default function OpportunityDetailPage() {
   if (!plan) {
     return (
       <SubPageLayout title="Property" onBack={() => navigate("/investments")}>
-        <div className="max-w-lg mx-auto px-4 py-12 text-center">
+        <div className="max-w-lg mx-auto py-12 text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Building2 size={28} className="text-primary/50" />
           </div>
@@ -154,7 +154,9 @@ export default function OpportunityDetailPage() {
 
   return (
     <SubPageLayout title="Property Details" onBack={() => navigate("/investments")}>
-      <div className="max-w-6xl mx-auto px-4 py-5 lg:px-8 pb-32 space-y-5">
+      {/* Width/padding come from SubPageLayout's standard container (max-w-5xl px-4 lg:px-8),
+          matching every other EstateFund page. */}
+      <div className="pb-32 space-y-5">
 
         {/* ── Image Gallery ────────────────────────────────────── */}
         {allImages.length > 0 && (
@@ -236,6 +238,30 @@ export default function OpportunityDetailPage() {
           </div>
         )}
 
+        {/* ── Early Invest CTA (mobile-first) ─────────────────────
+            Surfaces the primary action right after the property hero/title
+            so it's discoverable without scrolling through all details. */}
+        {!blocked && (
+          <div className="lg:hidden v3-card-elevated p-4 space-y-3 animate-fade-in">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-bold">Investment Range</p>
+                <p className="text-lg font-bold text-foreground mt-0.5 tabular-nums break-words">{formatUSDT(plan.minAmount)} – {formatUSDT(plan.maxAmount)}</p>
+              </div>
+              {capitalTarget > 0 && (
+                <div className="text-right shrink-0">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-bold">Funded</p>
+                  <p className="text-sm font-bold text-emerald-600 tabular-nums">{Math.round(raisedPct)}%</p>
+                </div>
+              )}
+            </div>
+            <Button className="w-full h-12 rounded-xl font-bold text-base" onClick={() => navigate(`/invest/${plan.id}`)}>
+              Invest Now <ArrowRight size={16} className="ml-1.5" />
+            </Button>
+            <p className="text-center text-[11px] text-muted-foreground">Daily returns begin within 24 hours</p>
+          </div>
+        )}
+
         {/* ── Desktop: 2-column layout ─────────────────────────── */}
         <div className="lg:grid lg:grid-cols-5 lg:gap-6 space-y-5 lg:space-y-0">
 
@@ -264,14 +290,14 @@ export default function OpportunityDetailPage() {
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center"><BarChart3 size={15} className="text-primary" /></div>
                 <h3 className="font-semibold text-sm text-foreground">Funding Progress</h3>
               </div>
-              <div className="flex justify-between items-end">
+              <div className="flex flex-wrap justify-between items-end gap-x-4 gap-y-2">
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Raised</p>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">{formatUSDT(capitalRaised)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums">{formatUSDT(capitalRaised)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Goal</p>
-                  <p className="text-2xl font-bold text-foreground tabular-nums">{formatUSDT(capitalTarget)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground tabular-nums">{formatUSDT(capitalTarget)}</p>
                 </div>
               </div>
               <div className="h-3 bg-muted/60 rounded-full overflow-hidden">
@@ -308,9 +334,9 @@ export default function OpportunityDetailPage() {
                   { label: "Investment Range", val: `${formatUSDT(plan.minAmount)} – ${formatUSDT(plan.maxAmount)}` },
                   { label: "Earnings Start", val: "Within 24 hours of participation" },
                 ].map(({ label, val, bold }) => (
-                  <div key={label} className="flex justify-between text-sm">
+                  <div key={label} className="flex flex-wrap justify-between items-baseline gap-x-4 gap-y-1 text-sm">
                     <span className="text-muted-foreground">{label}</span>
-                    <span className={cn("font-semibold", bold ? "text-emerald-600" : "text-foreground")}>{val}</span>
+                    <span className={cn("font-semibold text-right break-words", bold ? "text-emerald-600" : "text-foreground")}>{val}</span>
                   </div>
                 ))}
               </div>
@@ -461,7 +487,7 @@ export default function OpportunityDetailPage() {
               {/* Investment Range */}
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-bold">Investment Range</p>
-                <p className="text-2xl font-bold text-foreground mt-1">{formatUSDT(plan.minAmount)} – {formatUSDT(plan.maxAmount)}</p>
+                <p className="text-lg xl:text-2xl font-bold text-foreground mt-1 tabular-nums break-words">{formatUSDT(plan.minAmount)} – {formatUSDT(plan.maxAmount)}</p>
               </div>
 
               <div className="h-px bg-border/50" />
@@ -485,9 +511,9 @@ export default function OpportunityDetailPage() {
               {/* Funding Progress */}
               {capitalTarget > 0 && (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between flex-wrap gap-x-2 text-xs">
                     <span className="text-muted-foreground">{Math.round(raisedPct)}% funded</span>
-                    <span className="font-semibold text-foreground tabular-nums">{formatUSDT(capitalRaised)} / {formatUSDT(capitalTarget)}</span>
+                    <span className="font-semibold text-foreground tabular-nums break-words text-right">{formatUSDT(capitalRaised)} / {formatUSDT(capitalTarget)}</span>
                   </div>
                   <div className="h-2.5 bg-muted/60 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all duration-500" style={{ width: `${raisedPct}%` }} />

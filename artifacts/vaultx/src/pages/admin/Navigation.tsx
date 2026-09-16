@@ -143,8 +143,10 @@ export function AdminNav({ active, onNavigate, pendingCounts }: AdminNavProps) {
 
   return (
     <>
-      {/* Desktop sidebar — lg and up only */}
-      <nav className="hidden lg:flex w-56 shrink-0 bg-sidebar border-r border-sidebar-border flex-col h-full overflow-hidden sticky top-0 h-screen">
+      {/* Desktop sidebar — lg and up only. Fixed so it never occupies flow height
+          (a sticky h-screen sidebar inside a non-flex parent pushed the content
+          down a full viewport on desktop). */}
+      <nav className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 z-30 w-56 bg-sidebar border-r border-sidebar-border flex-col overflow-y-auto">
         {navContent}
       </nav>
 
