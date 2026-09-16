@@ -1,0 +1,26 @@
+{
+  "name": "estatefund",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "packageManager": "pnpm@10.26.1",
+  "scripts": {
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build && pnpm run build:web && pnpm run build:serverless",
+    "build:web": "vite build --config vite.config.mts",
+    "build:serverless": "pnpm --filter @workspace/api-server exec node build-serverless.mjs",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2",
+    "vite": "catalog:"
+  }
+}

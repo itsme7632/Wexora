@@ -1,0 +1,3 @@
+// Intentionally empty: Freebuff managed hosting detects this repo as static Vite
+// and ignores Vercel project configuration. Keeping this file empty documents
+// that the root repo deploys as static output (dist/) on Freebuff hosting.

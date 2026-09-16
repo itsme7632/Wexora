@@ -1,0 +1,422 @@
+import { Router, type IRouter } from "express";
+import { eq, and, desc, asc, inArray, count, sum, sql } from "drizzle-orm";
+import {
+  db,
+  investmentPlansTable,
+  userInvestmentsTable,
+  walletsTable,
+  transactionsTable,
+  notificationsTable,
+} from "@workspace/db";
+import { requireAuth } from "../middlewares/auth";
+import { generateTxId } from "../lib/generate-tx-id";
+
+const router: IRouter = Router();
+
+const BOOKABLE_STATUSES = ["active", "funding", "featured", "trending"];
+const VISIBLE_STATUSES = ["active", "funding", "featured", "trending", "fully_allocated"];
+
+function serializePlan(p: typeof investmentPlansTable.$inferSelect, stats?: { totalParticipants: number; capitalRaised: number; averageAllocation: number }) {
+  const fundingGoal = (p as any).fundingGoal ? parseFloat((p as any).fundingGoal) : null;
+  const currentFunding = parseFloat((p as any).currentFunding ?? "0");
+  const capitalRaised = stats?.capitalRaised ?? currentFunding;
+  const remainingCapacity = fundingGoal !== null ? Math.max(0, fundingGoal - capitalRaised) : null;
+  const fundingPercent = fundingGoal && fundingGoal > 0 ? Math.min(100, Math.round((capitalRaised / fundingGoal) * 100)) : null;
+  return {
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    minAmount: parseFloat(p.minAmount),
+    maxAmount: parseFloat(p.maxAmount),
+    dailyReturnRate: parseFloat(p.dailyReturnRate),
+    minRoiRate: parseFloat(p.minRoiRate ?? "0.013"),
+    maxRoiRate: parseFloat(p.maxRoiRate ?? "0.017"),
+    durationDays: p.durationDays,
+    riskLevel: p.riskLevel,
+    features: p.features ?? [],
+    isFeatured: p.isFeatured,
+    isPopular: (p as any).isPopular ?? false,
+    isActive: p.isActive,
+    category: (p as any).category ?? "General",
+    bannerImageUrl: (p as any).bannerImageUrl ?? null,
+    fundingGoal,
+    currentFunding: capitalRaised,
+    remainingCapacity,
+    fundingPercent,
+    totalParticipants: stats?.totalParticipants ?? 0,
+    averageAllocation: stats?.averageAllocation ?? 0,
+    totalParticipantLimit: (p as any).totalParticipantLimit ?? null,
+    displayParticipantCount: (p as any).displayParticipantCount ?? null,
+    status: (p as any).status ?? "active",
+    colorTheme: (p as any).colorTheme ?? "blue",
+    autoCompoundAvailable: (p as any).autoCompoundAvailable ?? true,
+    startDate: (p as any).startDate ?? null,
+    endDate: (p as any).endDate ?? null,
+    sortOrder: (p as any).sortOrder ?? 0,
+    // ── Real Estate Fields (V4.1) ──────────────────────────────────────
+    propertyType: (p as any).propertyType ?? null,
+    location: (p as any).location ?? null,
+    images: (p as any).images ?? [],
+    fundingDeadline: (p as any).fundingDeadline ?? null,
+  };
+}
+
+function computeInvestmentView(
+  inv: typeof userInvestmentsTable.$inferSelect,
+  planName: string,
+  planMinRoi?: string,
+  planMaxRoi?: string,
+  planExtra?: {
+    location?: string | null;
+    propertyType?: string | null;
+    images?: string[] | null;
+    bannerImageUrl?: string | null;
+    durationDays?: number;
+  },
+) {
+  const now = new Date();
+  const start = new Date(inv.startDate);
+  const end = new Date(inv.endDate);
+  const totalDays = Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const elapsed = (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+  const daysRemaining = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  const progressPercent = Math.min(100, Math.max(0, (elapsed / totalDays) * 100));
+  const amount = parseFloat(inv.amount);
+  const pendingEarnings = parseFloat(inv.pendingEarnings);
+  const dailyRate = parseFloat(inv.dailyReturnRate);
+  const minRoiRate = parseFloat(planMinRoi ?? "0.013");
+  const maxRoiRate = parseFloat(planMaxRoi ?? "0.017");
+  // currentValue compounds daily: original amount + unclaimed profits
+  const currentValue = amount + pendingEarnings;
+  // Projections use locked-in dailyReturnRate and currentValue as effective principal
+  const projectedDailyMin = currentValue * minRoiRate;
+  const projectedDailyMax = currentValue * maxRoiRate;
+  const projectedTotalMin = amount * minRoiRate * totalDays;
+  const projectedTotalMax = amount * maxRoiRate * totalDays;
+
+  const lastRef = inv.lastEarningAt ? new Date(inv.lastEarningAt) : start;
+  const nextPayoutAt = new Date(lastRef.getTime() + 24 * 60 * 60 * 1000);
+
+  return {
+    id: inv.id,
+    planId: inv.planId,
+    planName,
+    amount,
+    originalAmount: amount,
+    currentValue,
+    pendingEarnings,
+    totalEarned: parseFloat(inv.totalEarned),
+    dailyReturnRate: dailyRate,
+    minRoiRate,
+    maxRoiRate,
+    autoCompound: inv.autoCompound,
+    startDate: inv.startDate,
+    endDate: inv.endDate,
+    lastEarningAt: inv.lastEarningAt ?? null,
+    nextPayoutAt: nextPayoutAt.toISOString(),
+    status: inv.status,
+    daysRemaining,
+    daysTotal: Math.round(totalDays),
+    progressPercent: parseFloat(progressPercent.toFixed(2)),
+    projectedDailyMin: parseFloat(projectedDailyMin.toFixed(2)),
+    projectedDailyMax: parseFloat(projectedDailyMax.toFixed(2)),
+    projectedTotalMin: parseFloat(projectedTotalMin.toFixed(2)),
+    projectedTotalMax: parseFloat(projectedTotalMax.toFixed(2)),
+    // ── Real Estate Fields (V4.2) ──────────────────────────────────────
+    location: planExtra?.location ?? null,
+    propertyType: planExtra?.propertyType ?? null,
+    images: planExtra?.images ?? [],
+    bannerImageUrl: planExtra?.bannerImageUrl ?? null,
+    durationDays: planExtra?.durationDays ?? Math.round(totalDays),
+  };
+}
+
+router.get("/investments/plans", async (_req, res): Promise<void> => {
+  const plans = await db
+    .select()
+    .from(investmentPlansTable)
+    .where(
+      and(
+        eq(investmentPlansTable.isActive, true),
+        inArray(investmentPlansTable.status as any, VISIBLE_STATUSES),
+      ),
+    )
+    .orderBy(asc(investmentPlansTable.minAmount), asc(investmentPlansTable.id));
+
+  if (plans.length === 0) {
+    res.json([]);
+    return;
+  }
+
+  const planStats = await db
+    .select({
+      planId: userInvestmentsTable.planId,
+      totalParticipants: count(),
+      capitalRaised: sum(userInvestmentsTable.amount),
+    })
+    .from(userInvestmentsTable)
+    .where(eq(userInvestmentsTable.status, "active"))
+    .groupBy(userInvestmentsTable.planId);
+
+  const statsMap = Object.fromEntries(
+    planStats.map((s) => {
+      const participants = Number(s.totalParticipants ?? 0);
+      const raised = parseFloat(s.capitalRaised ?? "0");
+      return [s.planId, {
+        totalParticipants: participants,
+        capitalRaised: raised,
+        averageAllocation: participants > 0 ? raised / participants : 0,
+      }];
+    })
+  );
+
+  res.json(plans.map((p) => serializePlan(p, statsMap[p.id])));
+});
+
+router.get("/investments", requireAuth, async (req, res): Promise<void> => {
+  const investments = await db
+    .select({
+      inv: userInvestmentsTable,
+      planName: investmentPlansTable.name,
+      planMinRoi: investmentPlansTable.minRoiRate,
+      planMaxRoi: investmentPlansTable.maxRoiRate,
+      location: investmentPlansTable.location,
+      propertyType: investmentPlansTable.propertyType,
+      images: investmentPlansTable.images,
+      durationDays: investmentPlansTable.durationDays,
+    })
+    .from(userInvestmentsTable)
+    .leftJoin(investmentPlansTable, eq(userInvestmentsTable.planId, investmentPlansTable.id))
+    .where(eq(userInvestmentsTable.userId, req.session.userId!))
+    .orderBy(desc(userInvestmentsTable.createdAt));
+
+  res.json(
+    investments.map((row) =>
+      computeInvestmentView(
+        row.inv,
+        row.planName ?? "Unknown Plan",
+        row.planMinRoi ?? undefined,
+        row.planMaxRoi ?? undefined,
+        {
+          location: row.location,
+          propertyType: row.propertyType,
+          images: row.images,
+          durationDays: row.durationDays ?? undefined,
+        },
+      ),
+    ),
+  );
+});
+
+router.post("/investments", requireAuth, async (req, res): Promise<void> => {
+  const { planId, amount } = req.body;
+
+  if (!planId || !amount || amount <= 0) {
+    res.status(400).json({ error: "Invalid input", message: "Plan and valid amount required" });
+    return;
+  }
+
+  const [plan] = await db
+    .select()
+    .from(investmentPlansTable)
+    .where(and(eq(investmentPlansTable.id, planId), eq(investmentPlansTable.isActive, true)))
+    .limit(1);
+
+  if (!plan) {
+    res.status(404).json({ error: "Plan not found", message: "Investment plan not found" });
+    return;
+  }
+
+  const planStatus = (plan as any).status ?? "active";
+  if (planStatus === "fully_allocated") {
+    res.status(400).json({ error: "Fully allocated", message: "This investment opportunity has reached its funding capacity and is no longer accepting new investments" });
+    return;
+  }
+  if (!BOOKABLE_STATUSES.includes(planStatus)) {
+    res.status(400).json({ error: "Plan unavailable", message: "This investment opportunity is not currently accepting new investments" });
+    return;
+  }
+
+  const now = new Date();
+  if ((plan as any).endDate && new Date((plan as any).endDate) < now) {
+    res.status(400).json({ error: "Plan expired", message: "This investment opportunity has expired" });
+    return;
+  }
+
+  // V4.1: Check funding deadline — controls whether new investments are accepted
+  // This is separate from the plan's endDate and from each user's individual investment duration
+  const fundingDeadline = (plan as any).fundingDeadline;
+  if (fundingDeadline && new Date(fundingDeadline) < now) {
+    res.status(400).json({ error: "Funding closed", message: "The funding period for this opportunity has ended. No new investments are being accepted." });
+    return;
+  }
+
+  const totalParticipantLimit = (plan as any).totalParticipantLimit as number | null;
+  if (totalParticipantLimit !== null && totalParticipantLimit > 0) {
+    const [participantCount] = await db
+      .select({ c: count() })
+      .from(userInvestmentsTable)
+      .where(and(eq(userInvestmentsTable.planId, planId), eq(userInvestmentsTable.status, "active")));
+    if (Number(participantCount?.c ?? 0) >= totalParticipantLimit) {
+      res.status(400).json({ error: "Participant limit reached", message: "This opportunity has reached its maximum participant limit" });
+      return;
+    }
+  }
+
+  const minAmount = parseFloat(plan.minAmount);
+  const maxAmount = parseFloat(plan.maxAmount);
+
+  if (amount < minAmount || amount > maxAmount) {
+    res.status(400).json({
+      error: "Amount out of range",
+      message: `Amount must be between ${minAmount} and ${maxAmount} USDT`,
+    });
+    return;
+  }
+
+  const [wallet] = await db
+    .select()
+    .from(walletsTable)
+    .where(eq(walletsTable.userId, req.session.userId!))
+    .limit(1);
+
+  if (!wallet || parseFloat(wallet.balance) < amount) {
+    res.status(400).json({ error: "Insufficient balance", message: "Insufficient wallet balance" });
+    return;
+  }
+
+  const endDate = new Date();
+  endDate.setDate(endDate.getDate() + plan.durationDays);
+
+  const midRoi =
+    (parseFloat(plan.minRoiRate ?? "0.013") + parseFloat(plan.maxRoiRate ?? "0.017")) / 2;
+
+  const [investment] = await db
+    .insert(userInvestmentsTable)
+    .values({
+      userId: req.session.userId!,
+      planId: plan.id,
+      amount: amount.toString(),
+      dailyReturnRate: midRoi.toFixed(6),
+      endDate,
+      status: "active",
+    })
+    .returning();
+
+  await db
+    .update(walletsTable)
+    .set({ balance: (parseFloat(wallet.balance) - amount).toFixed(8) })
+    .where(eq(walletsTable.userId, req.session.userId!));
+
+  await db
+    .update(investmentPlansTable)
+    .set({ currentFunding: sql`current_funding + ${amount.toFixed(8)}` } as any)
+    .where(eq(investmentPlansTable.id, plan.id));
+
+  await db.insert(transactionsTable).values({
+    userId: req.session.userId!,
+    type: "investment",
+    amount: amount.toString(),
+    status: "completed",
+    txId: generateTxId(),
+    note: `Invested ${amount} USDT in ${plan.name}`,
+  });
+
+  await db.insert(notificationsTable).values({
+    userId: req.session.userId!,
+    type: "investment",
+    title: "Investment Started",
+    message: `Your ${amount} USDT investment in ${plan.name} is now active. Daily ROI: ${(midRoi * 100).toFixed(2)}% — distributions will be ready in 24 hours.`,
+  });
+
+  res.status(201).json(
+    computeInvestmentView(investment, plan.name, plan.minRoiRate ?? undefined, plan.maxRoiRate ?? undefined),
+  );
+});
+
+router.post("/investments/:id/claim", requireAuth, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const userId = req.session.userId!;
+
+  try {
+    // Atomic transaction with row-level lock prevents double-claim from concurrent requests
+    const outcome = await db.transaction(async (tx) => {
+      const [investment] = await tx
+        .select()
+        .from(userInvestmentsTable)
+        .where(and(eq(userInvestmentsTable.id, id), eq(userInvestmentsTable.userId, userId)))
+        .for("update")
+        .limit(1);
+
+      if (!investment) return { status: "not_found" as const };
+
+      const pending = parseFloat(investment.pendingEarnings);
+      if (pending <= 0) return { status: "no_earnings" as const };
+
+      await tx
+        .update(userInvestmentsTable)
+        .set({ pendingEarnings: "0" })
+        .where(eq(userInvestmentsTable.id, id));
+
+      await tx
+        .update(walletsTable)
+        .set({
+          balance: sql`CAST(balance AS numeric) + ${pending}`,
+          totalEarnings: sql`CAST(total_earnings AS numeric) + ${pending}`,
+        })
+        .where(eq(walletsTable.userId, userId));
+
+      await tx.insert(transactionsTable).values({
+        userId,
+        type: "earning",
+        amount: pending.toFixed(8),
+        status: "completed",
+        txId: generateTxId(),
+        note: `Earnings claimed from investment #${id}`,
+      });
+
+      return { status: "ok" as const, pending };
+    });
+
+    if (outcome.status === "not_found") { res.status(404).json({ error: "Not found" }); return; }
+    if (outcome.status === "no_earnings") { res.status(400).json({ error: "No earnings", message: "No pending earnings to claim" }); return; }
+
+    const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, userId)).limit(1);
+    res.json({ amountClaimed: outcome.pending, newBalance: parseFloat(wallet.balance) });
+  } catch {
+    res.status(500).json({ error: "Server error", message: "Failed to process claim" });
+  }
+});
+
+
+router.get("/investments/earnings-history", requireAuth, async (req, res): Promise<void> => {
+  const { limit = "90" } = req.query as { limit?: string };
+  const userId = req.session.userId!;
+
+  const txs = await db
+    .select()
+    .from(transactionsTable)
+    .where(
+      and(
+        eq(transactionsTable.userId, userId),
+        eq(transactionsTable.type, "earning"),
+        eq(transactionsTable.status, "completed"),
+      )
+    )
+    .orderBy(desc(transactionsTable.createdAt))
+    .limit(parseInt(limit, 10));
+
+  res.json(
+    txs.map((t) => ({
+      id: t.id,
+      type: t.type,
+      amount: parseFloat(t.amount),
+      note: t.note,
+      createdAt: t.createdAt,
+    }))
+  );
+});
+
+
+export default router;

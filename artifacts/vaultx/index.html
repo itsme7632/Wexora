@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#0a1628" />
+    <title>EstateFund — Real Estate Investment Platform</title>
+    <meta name="description" content="EstateFund is a secure real estate investment platform offering premium property investment opportunities and real-time portfolio tracking." />
+    <meta name="application-name" content="EstateFund" />
+    <meta name="robots" content="index, follow" />
+    <!-- Open Graph -->
+    <meta property="og:title" content="EstateFund — Real Estate Investment Platform" />
+    <meta property="og:description" content="Premium real estate investment opportunities. Join EstateFund and access curated property investments." />
+    <meta property="og:image" content="/ef-social.png" />
+    <meta property="og:url" content="https://estatefund.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EstateFund" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="EstateFund" />
+    <meta name="twitter:description" content="Premium Real Estate Investment Platform." />
+    <meta name="twitter:image" content="/ef-social.png" />
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/ef-icon.png" />
+    <link rel="apple-touch-icon" href="/ef-apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      /* Prevent flash before JS runs — matches new V2 theme */
+      html { background-color: #f5f7fa; }
+      html.app-mode { background-color: #0a1628 !important; }
+      html.app-mode body { background-color: #0a1628 !important; }
+      html.dark { background-color: hsl(222, 30%, 6%); }
+      html.dark.app-mode { background-color: hsl(222, 30%, 6%) !important; }
+    </style>
+    <script>
+      // Runs before first paint — no flash
+      (function() {
+        try {
+          // Apply saved theme
+          var theme = localStorage.getItem('estatefund-theme') || localStorage.getItem('wexora-theme');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+
+          // Detect app mode (WebView / PWA / AppGeyser)
+          var ua = navigator.userAgent || '';
+          var isStandalone =
+            ('standalone' in navigator && navigator.standalone === true) ||
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.matchMedia('(display-mode: fullscreen)').matches;
+          var isWebView =
+            /wv/.test(ua) ||
+            /WebView/.test(ua) ||
+            /AppGeyser/.test(ua) ||
+            (/Android/.test(ua) && !/Chrome\/[.0-9]*\s+Mobile/.test(ua) && /Version\//.test(ua)) ||
+            (!/Chrome/.test(ua) && /Android/.test(ua));
+
+          if (isStandalone || isWebView) {
+            document.documentElement.classList.add('app-mode');
+          }
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,1374 @@
+import { Router, type IRouter } from "express";
+import bcrypt from "bcryptjs";
+import { eq, ilike, desc, asc, count, sum, or, and, gte, sql } from "drizzle-orm";
+import {
+  db,
+  usersTable,
+  walletsTable,
+  kycSubmissionsTable,
+  transactionsTable,
+  notificationsTable,
+  userInvestmentsTable,
+  investmentPlansTable,
+  referralsTable,
+  platformSettingsTable,
+  adminActionLogsTable,
+  withdrawalAddressesTable,
+  referralSalaryTable,
+} from "@workspace/db";
+import { requireAdmin } from "../middlewares/auth";
+import { generateTxId } from "../lib/generate-tx-id";
+import { processAllInvestments } from "../lib/roi-engine";
+import { EmailService } from "../lib/email";
+import crypto from "crypto";
+
+const router: IRouter = Router();
+
+function serializeUser(
+  user: typeof usersTable.$inferSelect,
+  wallet?: typeof walletsTable.$inferSelect | null,
+  withdrawalAddressCount?: number,
+) {
+  return {
+    id: user.id,
+    displayId: user.displayId,
+    fullName: user.fullName,
+    username: user.username,
+    email: user.email,
+    whatsapp: user.whatsapp,
+    country: user.country,
+    balance: parseFloat(wallet?.balance ?? "0"),
+    totalDeposited: parseFloat(wallet?.totalDeposited ?? "0"),
+    totalWithdrawn: parseFloat(wallet?.totalWithdrawn ?? "0"),
+    totalEarnings: parseFloat(wallet?.totalEarnings ?? "0"),
+    kycStatus: user.kycStatus,
+    isAdmin: user.isAdmin,
+    isActive: user.isActive,
+    twoFaEnabled: user.twoFaEnabled,
+    emailVerified: user.emailVerified,
+    hasWithdrawalPassword: !!user.withdrawalPasswordHash,
+    withdrawalAddressCount: withdrawalAddressCount ?? 0,
+    withdrawalLocked: user.withdrawalLocked,
+    transferLocked: user.transferLocked,
+    whatsappLocked: user.whatsappLocked,
+    ipAddress: user.ipAddress,
+    lastLoginIp: user.lastLoginIp,
+    referralCode: user.referralCode,
+    lastLoginAt: user.lastLoginAt,
+    createdAt: user.createdAt,
+  };
+}
+
+router.get("/admin/users", requireAdmin, async (req, res): Promise<void> => {
+  const { search, limit = "20", offset = "0" } = req.query as Record<string, string>;
+
+  const whereClause = search
+    ? or(
+        ilike(usersTable.email, `%${search}%`),
+        ilike(usersTable.username, `%${search}%`),
+        ilike(usersTable.fullName, `%${search}%`),
+        ilike(usersTable.displayId, `%${search}%`)
+      )
+    : undefined;
+
+  const results = await db
+    .select({ user: usersTable, wallet: walletsTable })
+    .from(usersTable)
+    .leftJoin(walletsTable, eq(walletsTable.userId, usersTable.id))
+    .where(whereClause)
+    .orderBy(desc(usersTable.createdAt))
+    .limit(parseInt(limit, 10))
+    .offset(parseInt(offset, 10));
+
+  const userIds = results.map((r) => r.user.id);
+  const addrCounts: Record<number, number> = {};
+  if (userIds.length > 0) {
+    const rows = await db
+      .select({ userId: withdrawalAddressesTable.userId, c: count() })
+      .from(withdrawalAddressesTable)
+      .where(sql`${withdrawalAddressesTable.userId} = ANY(${sql.raw(`ARRAY[${userIds.join(",")}]::int[]`)})`)
+      .groupBy(withdrawalAddressesTable.userId);
+    rows.forEach((r) => { addrCounts[r.userId] = Number(r.c); });
+  }
+
+  const total = search
+    ? results.length
+    : (await db.select({ c: count() }).from(usersTable))[0]?.c ?? 0;
+
+  res.json({
+    items: results.map((r) => serializeUser(r.user, r.wallet, addrCounts[r.user.id] ?? 0)),
+    total,
+  });
+});
+
+router.get("/admin/users/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [result] = await db
+    .select({ user: usersTable, wallet: walletsTable })
+    .from(usersTable)
+    .leftJoin(walletsTable, eq(walletsTable.userId, usersTable.id))
+    .where(eq(usersTable.id, id))
+    .limit(1);
+
+  if (!result) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const [investments, referralCountRow, recentTxs, activeInvSummary, totalInvSummary] = await Promise.all([
+    db.select({ inv: userInvestmentsTable, planName: investmentPlansTable.name })
+      .from(userInvestmentsTable)
+      .leftJoin(investmentPlansTable, eq(userInvestmentsTable.planId, investmentPlansTable.id))
+      .where(eq(userInvestmentsTable.userId, id))
+      .orderBy(desc(userInvestmentsTable.createdAt))
+      .limit(10),
+
+    db.select({ c: count() }).from(referralsTable).where(eq(referralsTable.referrerId, id)),
+
+    db.select().from(transactionsTable)
+      .where(eq(transactionsTable.userId, id))
+      .orderBy(desc(transactionsTable.createdAt))
+      .limit(15),
+
+    db.select({ c: count(), s: sum(userInvestmentsTable.amount) })
+      .from(userInvestmentsTable)
+      .where(and(eq(userInvestmentsTable.userId, id), eq(userInvestmentsTable.status, "active"))),
+
+    db.select({ c: count(), earned: sum(userInvestmentsTable.totalEarned) })
+      .from(userInvestmentsTable)
+      .where(eq(userInvestmentsTable.userId, id)),
+  ]);
+
+  const wallet = result.wallet;
+
+  res.json({
+    ...serializeUser(result.user, wallet),
+    referralPendingEarnings: parseFloat(wallet?.referralPendingEarnings ?? "0"),
+    referralCount: referralCountRow[0]?.c ?? 0,
+    activeInvestmentsCount: activeInvSummary[0]?.c ?? 0,
+    activeInvestmentsValue: parseFloat(activeInvSummary[0]?.s ?? "0"),
+    totalInvestmentsCount: totalInvSummary[0]?.c ?? 0,
+    totalInvestmentProfit: parseFloat(totalInvSummary[0]?.earned ?? "0"),
+    investments: investments.map((r) => ({
+      id: r.inv.id,
+      planName: r.planName ?? "Unknown",
+      amount: parseFloat(r.inv.amount),
+      totalEarned: parseFloat(r.inv.totalEarned),
+      pendingEarnings: parseFloat(r.inv.pendingEarnings),
+      status: r.inv.status,
+      startDate: r.inv.startDate,
+      endDate: r.inv.endDate,
+    })),
+    recentTransactions: recentTxs.map((t) => ({
+      id: t.id,
+      type: t.type,
+      amount: parseFloat(t.amount),
+      status: t.status,
+      note: t.note,
+      txId: t.txId,
+      createdAt: t.createdAt,
+    })),
+  });
+});
+
+router.put("/admin/users/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { fullName, email, whatsapp, country, isAdmin, isActive, withdrawalLocked, transferLocked, whatsappLocked } = req.body;
+
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!existing) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  await db.update(usersTable).set({
+    fullName: fullName ?? existing.fullName,
+    email: email ?? existing.email,
+    whatsapp: whatsapp !== undefined ? whatsapp : existing.whatsapp,
+    country: country !== undefined ? country : existing.country,
+    isAdmin: isAdmin !== undefined ? isAdmin : existing.isAdmin,
+    isActive: isActive !== undefined ? isActive : existing.isActive,
+    withdrawalLocked: withdrawalLocked !== undefined ? withdrawalLocked : existing.withdrawalLocked,
+    transferLocked: transferLocked !== undefined ? transferLocked : existing.transferLocked,
+    whatsappLocked: whatsappLocked !== undefined ? whatsappLocked : existing.whatsappLocked,
+  }).where(eq(usersTable.id, id));
+
+  const [updated] = await db
+    .select({ user: usersTable, wallet: walletsTable })
+    .from(usersTable)
+    .leftJoin(walletsTable, eq(walletsTable.userId, usersTable.id))
+    .where(eq(usersTable.id, id))
+    .limit(1);
+
+  res.json(serializeUser(updated.user, updated.wallet));
+});
+
+router.post("/admin/users/:id/adjust-balance", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { amount, reason } = req.body;
+
+  if (amount === undefined || !reason) {
+    res.status(400).json({ error: "Amount and reason required" });
+    return;
+  }
+
+  const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, id)).limit(1);
+  if (!wallet) {
+    res.status(404).json({ error: "Wallet not found" });
+    return;
+  }
+
+  const adj = parseFloat(amount);
+  const newBalance = Math.max(0, parseFloat(wallet.balance) + adj);
+  await db.update(walletsTable).set({ balance: newBalance.toFixed(8) }).where(eq(walletsTable.userId, id));
+
+  await db.insert(transactionsTable).values({
+    userId: id,
+    type: "admin_adjustment",
+    amount: Math.abs(adj).toFixed(8),
+    status: "completed",
+    txId: generateTxId(),
+    note: `Admin adjustment: ${reason}`,
+  });
+
+  await db.insert(notificationsTable).values({
+    userId: id,
+    type: "transaction",
+    title: adj > 0 ? "Balance Credited" : "Balance Adjusted",
+    message: `Your balance has been ${adj > 0 ? "credited" : "adjusted"} by ${Math.abs(adj).toFixed(2)} USDT. Reason: ${reason}`,
+  });
+
+  res.json({ success: true, newBalance, message: "Balance adjusted" });
+});
+
+// ── Admin: manually verify a user's email ────────────────────────────────────
+router.post("/admin/users/:id/verify-email", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  await db.update(usersTable).set({
+    emailVerified: true,
+    emailVerificationCode: null,
+    emailVerificationExpires: null,
+  }).where(eq(usersTable.id, id));
+
+  await db.insert(adminActionLogsTable).values({
+    adminId: req.session.userId!,
+    targetUserId: id,
+    action: "email_verified",
+    details: `Email manually verified for @${user.username} (${user.email})`,
+  });
+
+  res.json({ success: true });
+});
+
+// ── Admin: resend verification email to a user ────────────────────────────────
+router.post("/admin/users/:id/resend-verification", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  if (user.emailVerified) {
+    res.status(400).json({ error: "Already verified", message: "This user's email is already verified" });
+    return;
+  }
+
+  const code = String(crypto.randomInt(100000, 999999));
+  const codeHash = await bcrypt.hash(code, 10);
+  const codeExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+  await db.update(usersTable).set({
+    emailVerificationCode: codeHash,
+    emailVerificationExpires: codeExpires,
+  }).where(eq(usersTable.id, id));
+
+  await EmailService.sendVerificationEmail(user.email, user.fullName, code);
+
+  res.json({ success: true });
+});
+
+router.post("/admin/users/:id/reset-2fa", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  await db.update(usersTable).set({ twoFaEnabled: false, twoFaSecret: null }).where(eq(usersTable.id, id));
+  await db.insert(notificationsTable).values({
+    userId: id,
+    type: "security",
+    title: "2FA Reset",
+    message: "Your two-factor authentication has been reset by an administrator.",
+  });
+
+  res.json({ success: true });
+});
+
+router.post("/admin/users/:id/reset-password", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { password } = req.body ?? {};
+
+  if (!password || password.length < 6) {
+    res.status(400).json({ error: "Password must be at least 6 characters" });
+    return;
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await db.update(usersTable).set({ passwordHash }).where(eq(usersTable.id, id));
+
+  await db.insert(adminActionLogsTable).values({
+    adminId: req.session.userId!,
+    targetUserId: id,
+    action: "password_reset",
+    details: `Password reset for @${user.username} (${user.email})`,
+  });
+
+  await db.insert(notificationsTable).values({
+    userId: id,
+    type: "security",
+    title: "Password Reset",
+    message: "Your password has been reset by an administrator. If you did not request this, please contact support immediately.",
+  });
+
+  res.json({ success: true });
+});
+
+router.get("/admin/password-reset-logs", requireAdmin, async (req, res): Promise<void> => {
+  const logs = await db
+    .select()
+    .from(adminActionLogsTable)
+    .where(eq(adminActionLogsTable.action, "password_reset"))
+    .orderBy(desc(adminActionLogsTable.createdAt))
+    .limit(200);
+
+  if (logs.length === 0) {
+    res.json([]);
+    return;
+  }
+
+  const userIds = [...new Set([...logs.map((l) => l.adminId), ...logs.map((l) => l.targetUserId)])];
+  const users = await db
+    .select({ id: usersTable.id, username: usersTable.username })
+    .from(usersTable)
+    .where(or(...userIds.map((uid) => eq(usersTable.id, uid))));
+
+  const userMap = Object.fromEntries(users.map((u) => [u.id, u.username]));
+
+  res.json(
+    logs.map((l) => ({
+      id: l.id,
+      adminUsername: userMap[l.adminId] ?? `#${l.adminId}`,
+      targetUsername: userMap[l.targetUserId] ?? `#${l.targetUserId}`,
+      details: l.details,
+      createdAt: l.createdAt,
+    }))
+  );
+});
+
+router.post("/admin/users/:id/notify", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { title, message, type = "announcement" } = req.body;
+
+  if (!title || !message) {
+    res.status(400).json({ error: "Title and message required" });
+    return;
+  }
+
+  await db.insert(notificationsTable).values({ userId: id, type, title, message });
+  res.json({ success: true });
+});
+
+router.get("/admin/kyc", requireAdmin, async (req, res): Promise<void> => {
+  const { status } = req.query as { status?: string };
+
+  const submissions = await db
+    .select({ sub: kycSubmissionsTable, username: usersTable.username, fullName: usersTable.fullName })
+    .from(kycSubmissionsTable)
+    .leftJoin(usersTable, eq(kycSubmissionsTable.userId, usersTable.id))
+    .where(status ? eq(kycSubmissionsTable.status, status) : undefined)
+    .orderBy(desc(kycSubmissionsTable.submittedAt));
+
+  res.json(submissions.map((s) => ({
+    id: s.sub.id,
+    userId: s.sub.userId,
+    username: s.username ?? "Unknown",
+    fullName: s.sub.fullLegalName || s.fullName || "Unknown",
+    documentType: s.sub.documentType,
+    documentNumber: s.sub.documentNumber,
+    country: s.sub.country,
+    frontImageUrl: s.sub.frontImageUrl,
+    backImageUrl: s.sub.backImageUrl,
+    selfieUrl: s.sub.selfieUrl,
+    status: s.sub.status,
+    rejectionReason: s.sub.rejectionReason,
+    submittedAt: s.sub.submittedAt,
+    reviewedAt: s.sub.reviewedAt,
+  })));
+});
+
+router.post("/admin/kyc/:id/approve", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [sub] = await db.select().from(kycSubmissionsTable).where(eq(kycSubmissionsTable.id, id)).limit(1);
+  if (!sub) {
+    res.status(404).json({ error: "Submission not found" });
+    return;
+  }
+
+  await db.update(kycSubmissionsTable).set({ status: "approved", reviewedAt: new Date() }).where(eq(kycSubmissionsTable.id, id));
+  await db.update(usersTable).set({ kycStatus: "approved", isVerified: true }).where(eq(usersTable.id, sub.userId));
+  await db.insert(notificationsTable).values({
+    userId: sub.userId,
+    type: "security",
+    title: "KYC Approved",
+    message: "Your identity verification has been approved. Your account is now fully verified.",
+  });
+
+  const [kycUser] = await db.select({ email: usersTable.email, fullName: usersTable.fullName }).from(usersTable).where(eq(usersTable.id, sub.userId)).limit(1);
+  if (kycUser?.email) {
+    EmailService.sendKycApproved(kycUser.email, kycUser.fullName).catch(() => {});
+  }
+
+  res.json({ success: true });
+});
+
+router.post("/admin/kyc/:id/reject", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { reason } = req.body;
+
+  const [sub] = await db.select().from(kycSubmissionsTable).where(eq(kycSubmissionsTable.id, id)).limit(1);
+  if (!sub) {
+    res.status(404).json({ error: "Submission not found" });
+    return;
+  }
+
+  await db.update(kycSubmissionsTable).set({ status: "rejected", reviewedAt: new Date(), rejectionReason: reason }).where(eq(kycSubmissionsTable.id, id));
+  await db.update(usersTable).set({ kycStatus: "rejected" }).where(eq(usersTable.id, sub.userId));
+  await db.insert(notificationsTable).values({
+    userId: sub.userId,
+    type: "security",
+    title: "KYC Rejected",
+    message: `Your identity verification was rejected. Reason: ${reason || "Please resubmit with clearer images."}`,
+  });
+
+  const [kycRejUser] = await db.select({ email: usersTable.email, fullName: usersTable.fullName }).from(usersTable).where(eq(usersTable.id, sub.userId)).limit(1);
+  if (kycRejUser?.email) {
+    EmailService.sendKycRejected(kycRejUser.email, kycRejUser.fullName, reason).catch(() => {});
+  }
+
+  res.json({ success: true });
+});
+
+router.get("/admin/withdrawals", requireAdmin, async (req, res): Promise<void> => {
+  const { status, txId: txIdSearch } = req.query as { status?: string; txId?: string };
+  const where = and(
+    eq(transactionsTable.type, "withdrawal"),
+    status ? eq(transactionsTable.status, status) : undefined,
+    txIdSearch ? ilike(transactionsTable.txId, `%${txIdSearch}%`) : undefined
+  );
+
+  const withdrawals = await db
+    .select({ tx: transactionsTable, username: usersTable.username, displayId: usersTable.displayId })
+    .from(transactionsTable)
+    .leftJoin(usersTable, eq(transactionsTable.userId, usersTable.id))
+    .where(where)
+    .orderBy(desc(transactionsTable.createdAt))
+    .limit(100);
+
+  res.json(withdrawals.map((w) => ({
+    id: w.tx.id,
+    userId: w.tx.userId,
+    username: w.username,
+    displayId: w.displayId,
+    amount: parseFloat(w.tx.amount),
+    fee: parseFloat(w.tx.fee ?? "0"),
+    network: w.tx.network,
+    address: w.tx.address,
+    txHash: w.tx.txHash,
+    txId: w.tx.txId,
+    status: w.tx.status,
+    note: w.tx.note,
+    createdAt: w.tx.createdAt,
+  })));
+});
+
+router.post("/admin/withdrawals/:id/approve", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { txHash } = req.body ?? {};
+
+  const [tx] = await db.select().from(transactionsTable).where(eq(transactionsTable.id, id)).limit(1);
+  if (!tx) {
+    res.status(404).json({ error: "Transaction not found" });
+    return;
+  }
+  if (tx.status !== "pending") {
+    res.status(400).json({ error: "Already processed", message: "This withdrawal has already been processed" });
+    return;
+  }
+
+  await db.update(transactionsTable).set({ status: "completed", txHash: txHash || null, updatedAt: new Date() }).where(eq(transactionsTable.id, id));
+
+  const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, tx.userId)).limit(1);
+  if (wallet) {
+    const newWithdrawn = parseFloat(wallet.totalWithdrawn) + parseFloat(tx.amount);
+    await db.update(walletsTable).set({ totalWithdrawn: newWithdrawn.toFixed(8) }).where(eq(walletsTable.userId, tx.userId));
+  }
+
+  await db.insert(notificationsTable).values({
+    userId: tx.userId,
+    type: "transaction",
+    title: "Withdrawal Approved",
+    message: `Your withdrawal of ${parseFloat(tx.amount).toFixed(2)} USDT has been processed.${txHash ? ` TX: ${txHash}` : ""}`,
+  });
+
+  const [wdApprUser] = await db.select({ email: usersTable.email, fullName: usersTable.fullName }).from(usersTable).where(eq(usersTable.id, tx.userId)).limit(1);
+  if (wdApprUser?.email) {
+    EmailService.sendWithdrawalApproved(wdApprUser.email, wdApprUser.fullName, parseFloat(tx.amount), tx.address ?? "", txHash ?? undefined).catch(() => {});
+  }
+
+  res.json({ success: true });
+});
+
+router.post("/admin/withdrawals/:id/reject", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { reason } = req.body;
+
+  const [tx] = await db.select().from(transactionsTable).where(eq(transactionsTable.id, id)).limit(1);
+  if (!tx) {
+    res.status(404).json({ error: "Transaction not found" });
+    return;
+  }
+  if (tx.status !== "pending") {
+    res.status(400).json({ error: "Already processed", message: "This withdrawal has already been processed" });
+    return;
+  }
+
+  await db.update(transactionsTable).set({ status: "failed", updatedAt: new Date() }).where(eq(transactionsTable.id, id));
+
+  const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, tx.userId)).limit(1);
+  if (wallet) {
+    const netAmount = parseFloat(tx.amount);
+    const feeAmount = parseFloat((tx.fee as string) ?? "0");
+    const refundBalance = parseFloat(wallet.balance) + netAmount + feeAmount;
+    await db.update(walletsTable).set({ balance: refundBalance.toFixed(8) }).where(eq(walletsTable.userId, tx.userId));
+  }
+
+  const grossAmount = parseFloat(tx.amount) + parseFloat((tx.fee as string) ?? "0");
+  await db.insert(notificationsTable).values({
+    userId: tx.userId,
+    type: "transaction",
+    title: "Withdrawal Rejected",
+    message: `Your withdrawal of ${grossAmount.toFixed(2)} USDT was rejected. ${reason ? `Reason: ${reason}` : "Please contact support."} The full amount has been refunded to your wallet.`,
+  });
+
+  const [wdRejUser] = await db.select({ email: usersTable.email, fullName: usersTable.fullName }).from(usersTable).where(eq(usersTable.id, tx.userId)).limit(1);
+  if (wdRejUser?.email) {
+    EmailService.sendWithdrawalRejected(wdRejUser.email, wdRejUser.fullName, grossAmount, reason).catch(() => {});
+  }
+
+  res.json({ success: true });
+});
+
+// ─── DEPOSITS ─────────────────────────────────────────────────────────────
+router.get("/admin/deposits", requireAdmin, async (req, res): Promise<void> => {
+  const { status = "pending", txId: txIdSearch } = req.query as { status?: string; txId?: string };
+
+  const deposits = await db
+    .select({ tx: transactionsTable, username: usersTable.username, displayId: usersTable.displayId, fullName: usersTable.fullName })
+    .from(transactionsTable)
+    .leftJoin(usersTable, eq(transactionsTable.userId, usersTable.id))
+    .where(and(
+      eq(transactionsTable.type, "deposit"),
+      status !== "all" ? eq(transactionsTable.status, status) : undefined,
+      txIdSearch ? ilike(transactionsTable.txId, `%${txIdSearch}%`) : undefined
+    ))
+    .orderBy(desc(transactionsTable.createdAt))
+    .limit(100);
+
+  res.json(deposits.map((d) => {
+    let metadata: Record<string, string> | null = null;
+    try { if (d.tx.metadata) metadata = JSON.parse(d.tx.metadata); } catch {}
+    return {
+      id: d.tx.id,
+      userId: d.tx.userId,
+      username: d.username,
+      displayId: d.displayId,
+      fullName: d.fullName,
+      amount: parseFloat(d.tx.amount),
+      network: d.tx.network,
+      address: d.tx.address,
+      txHash: d.tx.txHash,
+      txId: d.tx.txId,
+      proofImageUrl: metadata?.proofImageUrl ?? null,
+      status: d.tx.status,
+      note: d.tx.note,
+      createdAt: d.tx.createdAt,
+    };
+  }));
+});
+
+router.post("/admin/deposits/:id/approve", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [tx] = await db.select().from(transactionsTable).where(eq(transactionsTable.id, id)).limit(1);
+  if (!tx) {
+    res.status(404).json({ error: "Transaction not found" });
+    return;
+  }
+  if (tx.status !== "pending") {
+    res.status(400).json({ error: "Already processed", message: "This deposit has already been processed" });
+    return;
+  }
+
+  await db.update(transactionsTable).set({ status: "completed", updatedAt: new Date() }).where(eq(transactionsTable.id, id));
+
+  const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, tx.userId)).limit(1);
+  if (wallet) {
+    const newBalance = parseFloat(wallet.balance) + parseFloat(tx.amount);
+    const newDeposited = parseFloat(wallet.totalDeposited) + parseFloat(tx.amount);
+    await db.update(walletsTable).set({
+      balance: newBalance.toFixed(8),
+      totalDeposited: newDeposited.toFixed(8),
+    }).where(eq(walletsTable.userId, tx.userId));
+  }
+
+  await db.insert(notificationsTable).values({
+    userId: tx.userId,
+    type: "transaction",
+    title: "Deposit Confirmed",
+    message: `Your deposit of ${parseFloat(tx.amount).toFixed(2)} USDT has been confirmed and credited to your wallet.`,
+  });
+
+  const [depositor] = await db.select().from(usersTable).where(eq(usersTable.id, tx.userId)).limit(1);
+
+  // Send deposit approved email
+  if (depositor?.email) {
+    EmailService.sendDepositApproved(
+      depositor.email,
+      depositor.fullName,
+      parseFloat(tx.amount),
+      tx.network ?? "Crypto",
+      undefined,
+      new Date().toUTCString(),
+    ).catch(() => {});
+  }
+
+  if (depositor?.referredBy) {
+    const depositAmount = parseFloat(tx.amount);
+    const depositorUsername = depositor.username ?? "user";
+
+    const getDepositSetting = async (key: string, fallback: string) => {
+      const [s] = await db.select().from(platformSettingsTable).where(eq(platformSettingsTable.key, key)).limit(1);
+      return s?.value ?? fallback;
+    };
+
+    const l1RateRaw = parseFloat(await getDepositSetting("referral_l1_deposit_rate", "5"));
+    const l2RateRaw = parseFloat(await getDepositSetting("referral_l2_deposit_rate", "3"));
+    const l3RateRaw = parseFloat(await getDepositSetting("referral_l3_deposit_rate", "1"));
+
+    const applyDepositCommission = async (referrerId: number, level: number, rateRaw: number) => {
+      const rate = rateRaw / 100;
+      const amount = depositAmount * rate;
+      if (amount < 0.0001) return;
+
+      await db.update(walletsTable).set({
+        referralPendingEarnings: sql`referral_pending_earnings + ${amount.toFixed(8)}`,
+      }).where(eq(walletsTable.userId, referrerId));
+
+      await db.insert(transactionsTable).values({
+        userId: referrerId,
+        type: "referral",
+        amount: amount.toFixed(8),
+        status: "completed",
+        txId: `REF-${tx.id}-L${level}`,
+        note: `L${level} referral commission (${rateRaw.toFixed(1)}%) from @${depositorUsername} deposit`,
+      });
+
+      await db.insert(notificationsTable).values({
+        userId: referrerId,
+        type: "transaction",
+        title: "Referral Commission Earned",
+        message: `You earned ${amount.toFixed(2)} USDT L${level} referral commission from @${depositorUsername}'s deposit.`,
+      });
+    };
+
+    const l1Id = depositor.referredBy;
+    await applyDepositCommission(l1Id, 1, l1RateRaw);
+
+    await db.update(referralsTable).set({
+      commissionAmount: sql`commission_amount + ${((depositAmount * l1RateRaw) / 100).toFixed(8)}`,
+      status: "active",
+    }).where(and(eq(referralsTable.referrerId, l1Id), eq(referralsTable.referredId, tx.userId)));
+
+    if (l2RateRaw > 0) {
+      const [l1User] = await db.select({ referredBy: usersTable.referredBy }).from(usersTable).where(eq(usersTable.id, l1Id)).limit(1);
+      if (l1User?.referredBy) {
+        const l2Id = l1User.referredBy;
+        await applyDepositCommission(l2Id, 2, l2RateRaw);
+
+        if (l3RateRaw > 0) {
+          const [l2User] = await db.select({ referredBy: usersTable.referredBy }).from(usersTable).where(eq(usersTable.id, l2Id)).limit(1);
+          if (l2User?.referredBy) {
+            await applyDepositCommission(l2User.referredBy, 3, l3RateRaw);
+          }
+        }
+      }
+    }
+  }
+
+  // First-deposit bonus
+  const getSetting = async (key: string, fallback: string) => {
+    const [s] = await db.select().from(platformSettingsTable).where(eq(platformSettingsTable.key, key)).limit(1);
+    return s?.value ?? fallback;
+  };
+  const bonusEnabled = (await getSetting("first_deposit_bonus_enabled", "false")) === "true";
+  if (bonusEnabled) {
+    const bonusPct = parseFloat(await getSetting("first_deposit_bonus_percent", "10"));
+    if (bonusPct > 0) {
+      // Count prior completed deposits for this user (excluding the one just approved)
+      const [prior] = await db
+        .select({ c: count() })
+        .from(transactionsTable)
+        .where(and(
+          eq(transactionsTable.userId, tx.userId),
+          eq(transactionsTable.type, "deposit"),
+          eq(transactionsTable.status, "completed"),
+          sql`${transactionsTable.id} != ${id}`,
+        ));
+      const priorCount = prior?.c ?? 0;
+      if (priorCount === 0) {
+        const bonusAmount = parseFloat(tx.amount) * (bonusPct / 100);
+        if (bonusAmount >= 0.01) {
+          const [bonusWallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, tx.userId)).limit(1);
+          if (bonusWallet) {
+            await db.update(walletsTable).set({
+              balance: (parseFloat(bonusWallet.balance) + bonusAmount).toFixed(8),
+            }).where(eq(walletsTable.userId, tx.userId));
+          }
+          await db.insert(transactionsTable).values({
+            userId: tx.userId,
+            type: "earning",
+            amount: bonusAmount.toFixed(8),
+            status: "completed",
+            txId: `FDB-${tx.id}`,
+            note: `First deposit bonus (${bonusPct}%)`,
+          });
+          await db.insert(notificationsTable).values({
+            userId: tx.userId,
+            type: "transaction",
+            title: "🎉 First Deposit Bonus!",
+            message: `You've received a ${bonusAmount.toFixed(2)} USDT first deposit bonus (${bonusPct}% of your deposit).`,
+          });
+        }
+      }
+    }
+  }
+
+  res.json({ success: true });
+});
+
+router.post("/admin/deposits/:id/reject", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+  const { reason } = req.body;
+
+  const [tx] = await db.select().from(transactionsTable).where(eq(transactionsTable.id, id)).limit(1);
+  if (!tx) {
+    res.status(404).json({ error: "Transaction not found" });
+    return;
+  }
+
+  await db.update(transactionsTable).set({ status: "failed", updatedAt: new Date() }).where(eq(transactionsTable.id, id));
+
+  await db.insert(notificationsTable).values({
+    userId: tx.userId,
+    type: "transaction",
+    title: "Deposit Rejected",
+    message: `Your deposit of ${parseFloat(tx.amount).toFixed(2)} USDT was rejected. ${reason ? `Reason: ${reason}` : "Please contact support with your payment proof."}`,
+  });
+
+  res.json({ success: true });
+});
+
+router.post("/admin/notifications/broadcast", requireAdmin, async (req, res): Promise<void> => {
+  const { title, message, type = "announcement" } = req.body;
+
+  if (!title || !message) {
+    res.status(400).json({ error: "Title and message required" });
+    return;
+  }
+
+  const users = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.isActive, true));
+
+  const values = users.map((u) => ({
+    userId: u.id,
+    type: type as string,
+    title,
+    message,
+    isBroadcast: true,
+  }));
+
+  if (values.length > 0) {
+    for (let i = 0; i < values.length; i += 100) {
+      await db.insert(notificationsTable).values(values.slice(i, i + 100));
+    }
+  }
+
+  res.json({ success: true, sentTo: users.length });
+});
+
+router.get("/admin/analytics", requireAdmin, async (req, res): Promise<void> => {
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(now);
+  weekStart.setDate(weekStart.getDate() - 7);
+
+  const [
+    [totalUsersRes],
+    [activeUsersRes],
+    [activeInvsRes],
+    [newTodayRes],
+    [pendingKycRes],
+    [pendingWdRes],
+    [pendingDepRes],
+    depositsRes,
+    withdrawalsRes,
+    earningsRes,
+    invValueRes,
+    depositsTodayRes,
+    withdrawalsTodayRes,
+    plansRes,
+    planStats,
+    [participantsRes],
+    [totalCapitalRow],
+  ] = await Promise.all([
+    db.select({ c: count() }).from(usersTable),
+    db.select({ c: count() }).from(usersTable).where(eq(usersTable.isActive, true)),
+    db.select({ c: count() }).from(userInvestmentsTable).where(eq(userInvestmentsTable.status, "active")),
+    db.select({ c: count() }).from(usersTable).where(gte(usersTable.createdAt, todayStart)),
+    db.select({ c: count() }).from(kycSubmissionsTable).where(eq(kycSubmissionsTable.status, "pending")),
+    db.select({ c: count() }).from(transactionsTable).where(and(eq(transactionsTable.type, "withdrawal"), eq(transactionsTable.status, "pending"))),
+    db.select({ c: count() }).from(transactionsTable).where(and(eq(transactionsTable.type, "deposit"), eq(transactionsTable.status, "pending"))),
+    db.select({ s: sum(transactionsTable.amount) }).from(transactionsTable).where(and(eq(transactionsTable.type, "deposit"), eq(transactionsTable.status, "completed"))),
+    db.select({ s: sum(transactionsTable.amount) }).from(transactionsTable).where(and(eq(transactionsTable.type, "withdrawal"), eq(transactionsTable.status, "completed"))),
+    db.select({ s: sum(transactionsTable.amount) }).from(transactionsTable).where(and(or(eq(transactionsTable.type, "earning"), eq(transactionsTable.type, "reinvest")), eq(transactionsTable.status, "completed"))),
+    db.select({ s: sum(userInvestmentsTable.amount) }).from(userInvestmentsTable).where(eq(userInvestmentsTable.status, "active")),
+    db.select({ s: sum(transactionsTable.amount) }).from(transactionsTable).where(and(eq(transactionsTable.type, "deposit"), eq(transactionsTable.status, "completed"), gte(transactionsTable.createdAt, todayStart))),
+    db.select({ s: sum(transactionsTable.amount) }).from(transactionsTable).where(and(eq(transactionsTable.type, "withdrawal"), eq(transactionsTable.status, "completed"), gte(transactionsTable.createdAt, todayStart))),
+    db.select().from(investmentPlansTable).orderBy(asc(investmentPlansTable.minAmount), asc(investmentPlansTable.id)),
+    db.select({
+      planId: userInvestmentsTable.planId,
+      activeCount: count(),
+      totalValue: sum(userInvestmentsTable.amount),
+    })
+      .from(userInvestmentsTable)
+      .where(eq(userInvestmentsTable.status, "active"))
+      .groupBy(userInvestmentsTable.planId),
+    db.select({ c: sql<number>`count(distinct ${userInvestmentsTable.userId})` })
+      .from(userInvestmentsTable),
+    db.select({ s: sum(userInvestmentsTable.amount) }).from(userInvestmentsTable),
+  ]);
+
+  const planStatsMap = Object.fromEntries(
+    planStats.map((s: any) => [s.planId, { activeCount: s.activeCount, totalValue: parseFloat(s.totalValue ?? "0") }])
+  );
+
+  const opportunityStats = plansRes.map((p) => ({
+    id: p.id,
+    name: p.name,
+    status: (p as any).status ?? "active",
+    category: (p as any).category ?? "General",
+    activeInvestors: planStatsMap[p.id]?.activeCount ?? 0,
+    totalValue: planStatsMap[p.id]?.totalValue ?? 0,
+    currentFunding: parseFloat((p as any).currentFunding ?? "0"),
+    fundingGoal: (p as any).fundingGoal ? parseFloat((p as any).fundingGoal) : null,
+  }));
+
+  const plansByStatus = plansRes.reduce<Record<string, number>>((acc, p) => {
+    const st = (p as any).status ?? "active";
+    acc[st] = (acc[st] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  res.json({
+    totalUsers: totalUsersRes?.c ?? 0,
+    activeUsers: activeUsersRes?.c ?? 0,
+    activeInvestments: activeInvsRes?.c ?? 0,
+    totalDeposits: parseFloat(depositsRes[0]?.s ?? "0"),
+    totalWithdrawals: parseFloat(withdrawalsRes[0]?.s ?? "0"),
+    totalEarningsPaid: parseFloat(earningsRes[0]?.s ?? "0"),
+    activeInvestmentsValue: parseFloat(invValueRes[0]?.s ?? "0"),
+    depositsToday: parseFloat(depositsTodayRes[0]?.s ?? "0"),
+    withdrawalsToday: parseFloat(withdrawalsTodayRes[0]?.s ?? "0"),
+    pendingWithdrawals: pendingWdRes?.c ?? 0,
+    pendingDeposits: pendingDepRes?.c ?? 0,
+    pendingKyc: pendingKycRes?.c ?? 0,
+    newUsersToday: newTodayRes?.c ?? 0,
+    revenueToday: parseFloat(depositsTodayRes[0]?.s ?? "0"),
+    totalInvestments: parseFloat(invValueRes[0]?.s ?? "0"),
+    totalOpportunities: plansRes.length,
+    activeOpportunities: plansByStatus["active"] ?? 0,
+    expiredOpportunities: plansByStatus["expired"] ?? 0,
+    fullyAllocatedOpportunities: plansByStatus["fully_allocated"] ?? 0,
+    totalParticipants: Number(participantsRes?.c ?? 0),
+    totalCapitalAllocated: parseFloat(invValueRes[0]?.s ?? "0"),
+    opportunityStats,
+    plansByStatus,
+  });
+});
+
+function serializeAdminPlan(p: typeof investmentPlansTable.$inferSelect, stats?: { totalParticipants: number; capitalRaised: number; averageAllocation: number }) {
+  const fundingGoal = (p as any).fundingGoal ? parseFloat((p as any).fundingGoal) : null;
+  // currentFunding is always the raw DB column value (what the admin manually set).
+  // capitalRaised is the real aggregated investment total from active user investments.
+  const currentFunding = parseFloat((p as any).currentFunding ?? "0");
+  const capitalRaised = stats?.capitalRaised ?? currentFunding;
+  const remainingCapacity = fundingGoal !== null ? Math.max(0, fundingGoal - capitalRaised) : null;
+  const fundingPercent = fundingGoal && fundingGoal > 0 ? Math.min(100, Math.round((capitalRaised / fundingGoal) * 100)) : null;
+  return {
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    minAmount: parseFloat(p.minAmount),
+    maxAmount: parseFloat(p.maxAmount),
+    dailyReturnRate: parseFloat(p.dailyReturnRate),
+    minRoiRate: parseFloat(p.minRoiRate ?? "0.013"),
+    maxRoiRate: parseFloat(p.maxRoiRate ?? "0.017"),
+    durationDays: p.durationDays,
+    riskLevel: p.riskLevel,
+    features: p.features ?? [],
+    isActive: p.isActive,
+    isFeatured: p.isFeatured,
+    isPopular: (p as any).isPopular ?? false,
+    category: (p as any).category ?? "General",
+    bannerImageUrl: (p as any).bannerImageUrl ?? null,
+    fundingGoal,
+    currentFunding,
+    capitalRaised,
+    remainingCapacity,
+    fundingPercent,
+    totalParticipants: stats?.totalParticipants ?? 0,
+    averageAllocation: stats?.averageAllocation ?? 0,
+    totalParticipantLimit: (p as any).totalParticipantLimit ?? null,
+    displayParticipantCount: (p as any).displayParticipantCount ?? null,
+    status: (p as any).status ?? "active",
+    colorTheme: (p as any).colorTheme ?? "blue",
+    autoCompoundAvailable: (p as any).autoCompoundAvailable ?? true,
+    startDate: (p as any).startDate ?? null,
+    endDate: (p as any).endDate ?? null,
+    sortOrder: (p as any).sortOrder ?? 0,
+    createdAt: p.createdAt,
+    // ── Real Estate Fields (V4.1) ──────────────────────────────────────
+    propertyType: (p as any).propertyType ?? null,
+    location: (p as any).location ?? null,
+    images: (p as any).images ?? [],
+    fundingDeadline: (p as any).fundingDeadline ?? null,
+  };
+}
+
+router.get("/admin/plans", requireAdmin, async (req, res): Promise<void> => {
+  const plans = await db
+    .select()
+    .from(investmentPlansTable)
+    .orderBy(asc(investmentPlansTable.minAmount), asc(investmentPlansTable.id));
+
+  if (plans.length === 0) {
+    res.json([]);
+    return;
+  }
+
+  const planStats = await db
+    .select({
+      planId: userInvestmentsTable.planId,
+      totalParticipants: count(),
+      capitalRaised: sum(userInvestmentsTable.amount),
+    })
+    .from(userInvestmentsTable)
+    .where(eq(userInvestmentsTable.status, "active"))
+    .groupBy(userInvestmentsTable.planId);
+
+  const statsMap = Object.fromEntries(
+    planStats.map((s) => {
+      const participants = Number(s.totalParticipants ?? 0);
+      const raised = parseFloat(s.capitalRaised ?? "0");
+      return [s.planId, {
+        totalParticipants: participants,
+        capitalRaised: raised,
+        averageAllocation: participants > 0 ? raised / participants : 0,
+      }];
+    })
+  );
+
+  res.json(plans.map((p) => serializeAdminPlan(p, statsMap[p.id])));
+});
+
+router.post("/admin/plans", requireAdmin, async (req, res): Promise<void> => {
+  try {
+    const {
+      name, description, minAmount, maxAmount, dailyReturnRate, minRoiRate, maxRoiRate,
+      durationDays, riskLevel, features, isActive, isFeatured, isPopular,
+      category, bannerImageUrl, fundingGoal, status, colorTheme, autoCompoundAvailable,
+      startDate, endDate, sortOrder, totalParticipantLimit, displayParticipantCount,
+      // V4.1: Real Estate Fields
+      propertyType, location, images, fundingDeadline,
+    } = req.body;
+
+    if (!name || !description || !minAmount || !maxAmount || !durationDays) {
+      res.status(400).json({ error: "Name, description, amounts, and duration required" });
+      return;
+    }
+
+    const midRoi = ((parseFloat(minRoiRate ?? "0.013") + parseFloat(maxRoiRate ?? "0.017")) / 2);
+
+    const safeInt = (v: any) => {
+      if (v === undefined || v === null || v === "") return null;
+      const n = parseInt(String(v), 10);
+      return isNaN(n) ? null : n;
+    };
+
+    const [plan] = await db.insert(investmentPlansTable).values({
+      name,
+      description,
+      minAmount: minAmount.toString(),
+      maxAmount: maxAmount.toString(),
+      dailyReturnRate: (dailyReturnRate ?? midRoi).toString(),
+      minRoiRate: (minRoiRate ?? 0.013).toString(),
+      maxRoiRate: (maxRoiRate ?? 0.017).toString(),
+      durationDays: parseInt(durationDays, 10),
+      riskLevel: riskLevel ?? "medium",
+      features: features ?? [],
+      isActive: isActive ?? true,
+      isFeatured: isFeatured ?? false,
+      isPopular: isPopular ?? false,
+      category: category ?? "General",
+      bannerImageUrl: bannerImageUrl ?? null,
+      fundingGoal: fundingGoal !== undefined && fundingGoal !== null ? fundingGoal.toString() : null,
+      currentFunding: "0",
+      status: status ?? "active",
+      colorTheme: colorTheme ?? "blue",
+      autoCompoundAvailable: autoCompoundAvailable ?? true,
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
+      sortOrder: sortOrder ?? 0,
+      totalParticipantLimit: safeInt(totalParticipantLimit),
+      displayParticipantCount: safeInt(displayParticipantCount),
+      // V4.1: Real Estate Fields
+      propertyType: propertyType ?? null,
+      location: location ?? null,
+      images: images ?? [],
+      fundingDeadline: fundingDeadline ? new Date(fundingDeadline) : null,
+    } as any).returning();
+
+    res.status(201).json(serializeAdminPlan(plan));
+  } catch (err: any) {
+    console.error("Create plan error:", err);
+    res.status(500).json({ success: false, message: err?.message ?? "Failed to create plan" });
+  }
+});
+
+router.put("/admin/plans/reorder", requireAdmin, async (req, res): Promise<void> => {
+  const body = req.body as { items?: Array<{ id: number; sortOrder: number }>; ids?: number[] };
+
+  let pairs: Array<{ id: number; sortOrder: number }> = [];
+
+  if (Array.isArray(body.items)) {
+    pairs = body.items;
+  } else if (Array.isArray(body.ids)) {
+    pairs = body.ids.map((id, idx) => ({ id, sortOrder: idx }));
+  } else {
+    res.status(400).json({ error: "Provide items [{id, sortOrder}] or ids [...]" });
+    return;
+  }
+
+  for (const pair of pairs) {
+    await db
+      .update(investmentPlansTable)
+      .set({ sortOrder: pair.sortOrder } as any)
+      .where(eq(investmentPlansTable.id, pair.id));
+  }
+
+  res.json({ success: true });
+});
+
+router.put("/admin/plans/:id", requireAdmin, async (req, res): Promise<void> => {
+  try {
+    const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(raw, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid plan ID" });
+      return;
+    }
+    const {
+      name, description, minAmount, maxAmount, dailyReturnRate, minRoiRate, maxRoiRate,
+      durationDays, riskLevel, features, isActive, isFeatured, isPopular,
+      category, bannerImageUrl, fundingGoal, currentFunding, status, colorTheme,
+      autoCompoundAvailable, startDate, endDate, sortOrder, totalParticipantLimit,
+      displayParticipantCount,
+      // V4.1: Real Estate Fields
+      propertyType, location, images, fundingDeadline,
+    } = req.body;
+
+    const [existing] = await db.select().from(investmentPlansTable).where(eq(investmentPlansTable.id, id)).limit(1);
+    if (!existing) {
+      res.status(404).json({ error: "Plan not found" });
+      return;
+    }
+
+    const ex = existing as any;
+
+    const safeInt = (v: any) => {
+      if (v === undefined || v === null || v === "") return null;
+      const n = parseInt(String(v), 10);
+      return isNaN(n) ? null : n;
+    };
+
+    const [updated] = await db.update(investmentPlansTable).set({
+      name: name ?? existing.name,
+      description: description ?? existing.description,
+      minAmount: minAmount !== undefined ? minAmount.toString() : existing.minAmount,
+      maxAmount: maxAmount !== undefined ? maxAmount.toString() : existing.maxAmount,
+      dailyReturnRate: dailyReturnRate !== undefined ? dailyReturnRate.toString() : existing.dailyReturnRate,
+      minRoiRate: minRoiRate !== undefined ? minRoiRate.toString() : existing.minRoiRate,
+      maxRoiRate: maxRoiRate !== undefined ? maxRoiRate.toString() : existing.maxRoiRate,
+      durationDays: durationDays !== undefined ? parseInt(durationDays, 10) : existing.durationDays,
+      riskLevel: riskLevel ?? existing.riskLevel,
+      features: features !== undefined ? features : existing.features,
+      isActive: isActive !== undefined ? isActive : existing.isActive,
+      isFeatured: isFeatured !== undefined ? isFeatured : existing.isFeatured,
+      isPopular: isPopular !== undefined ? isPopular : (ex.isPopular ?? false),
+      category: category !== undefined ? category : (ex.category ?? "General"),
+      bannerImageUrl: bannerImageUrl !== undefined ? bannerImageUrl : (ex.bannerImageUrl ?? null),
+      fundingGoal: fundingGoal !== undefined ? (fundingGoal !== null ? fundingGoal.toString() : null) : (ex.fundingGoal ?? null),
+      currentFunding: currentFunding !== undefined ? currentFunding.toString() : (ex.currentFunding ?? "0"),
+      status: status !== undefined ? status : (ex.status ?? "active"),
+      colorTheme: colorTheme !== undefined ? colorTheme : (ex.colorTheme ?? "blue"),
+      autoCompoundAvailable: autoCompoundAvailable !== undefined ? autoCompoundAvailable : (ex.autoCompoundAvailable ?? true),
+      startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : (ex.startDate ?? null),
+      endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : (ex.endDate ?? null),
+      sortOrder: sortOrder !== undefined ? sortOrder : (ex.sortOrder ?? 0),
+      totalParticipantLimit: totalParticipantLimit !== undefined ? safeInt(totalParticipantLimit) : (ex.totalParticipantLimit ?? null),
+      displayParticipantCount: displayParticipantCount !== undefined ? safeInt(displayParticipantCount) : (ex.displayParticipantCount ?? null),
+      // V4.1: Real Estate Fields
+      propertyType: propertyType !== undefined ? propertyType : (ex.propertyType ?? null),
+      location: location !== undefined ? location : (ex.location ?? null),
+      images: images !== undefined ? images : (ex.images ?? []),
+      fundingDeadline: fundingDeadline !== undefined ? (fundingDeadline ? new Date(fundingDeadline) : null) : (ex.fundingDeadline ?? null),
+    } as any).where(eq(investmentPlansTable.id, id)).returning();
+
+    res.json(serializeAdminPlan(updated));
+  } catch (err: any) {
+    console.error("Update plan error:", err);
+    res.status(500).json({ success: false, message: err?.message ?? "Failed to update plan" });
+  }
+});
+
+router.delete("/admin/plans/:id", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [refCount] = await db
+    .select({ c: count() })
+    .from(userInvestmentsTable)
+    .where(eq(userInvestmentsTable.planId, id));
+
+  if ((refCount?.c ?? 0) === 0) {
+    await db.delete(investmentPlansTable).where(eq(investmentPlansTable.id, id));
+  } else {
+    await db.update(investmentPlansTable).set({ isActive: false, status: "closed" } as any).where(eq(investmentPlansTable.id, id));
+  }
+
+  res.json({ success: true });
+});
+
+router.post("/admin/plans/:id/duplicate", requireAdmin, async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = parseInt(raw, 10);
+
+  const [existing] = await db.select().from(investmentPlansTable).where(eq(investmentPlansTable.id, id)).limit(1);
+  if (!existing) {
+    res.status(404).json({ error: "Plan not found" });
+    return;
+  }
+
+  const ex = existing as any;
+
+  const allPlans = await db
+    .select({ sortOrder: (investmentPlansTable as any).sortOrder })
+    .from(investmentPlansTable);
+  const maxSortOrder = Math.max(0, ...allPlans.map((p: any) => p.sortOrder ?? 0));
+
+  const [copy] = await db.insert(investmentPlansTable).values({
+    name: `${existing.name} (Copy)`,
+    description: existing.description,
+    minAmount: existing.minAmount,
+    maxAmount: existing.maxAmount,
+    dailyReturnRate: existing.dailyReturnRate,
+    minRoiRate: existing.minRoiRate,
+    maxRoiRate: existing.maxRoiRate,
+    durationDays: existing.durationDays,
+    riskLevel: existing.riskLevel,
+    features: existing.features,
+    isActive: false,
+    isFeatured: false,
+    isPopular: false,
+    category: ex.category ?? "General",
+    bannerImageUrl: ex.bannerImageUrl ?? null,
+    fundingGoal: ex.fundingGoal ?? null,
+    currentFunding: "0",
+    status: "draft",
+    colorTheme: ex.colorTheme ?? "blue",
+    autoCompoundAvailable: ex.autoCompoundAvailable ?? true,
+    startDate: null,
+    endDate: null,
+    sortOrder: maxSortOrder + 1,
+    totalParticipantLimit: ex.totalParticipantLimit ?? null,
+  } as any).returning();
+
+  res.status(201).json(serializeAdminPlan(copy));
+});
+
+router.post("/admin/roi/trigger", requireAdmin, async (req, res): Promise<void> => {
+  const { force = true } = req.body as { force?: boolean };
+  try {
+    const result = await processAllInvestments(force);
+    res.json({
+      success: true,
+      processed: result.processed,
+      matured: result.matured,
+      skipped: result.skipped,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: "ROI processing failed", message: err?.message ?? String(err) });
+  }
+});
+
+// ── Referral Salary Admin ─────────────────────────────────────────────────────
+
+router.get("/admin/referral-salary", requireAdmin, async (req, res): Promise<void> => {
+  const records = await db
+    .select({
+      salary: referralSalaryTable,
+      username: usersTable.username,
+      email: usersTable.email,
+    })
+    .from(referralSalaryTable)
+    .leftJoin(usersTable, eq(referralSalaryTable.userId, usersTable.id))
+    .orderBy(desc(referralSalaryTable.currentVolume));
+
+  res.json(records.map((r) => ({
+    id: r.salary.id,
+    userId: r.salary.userId,
+    username: r.username ?? "Unknown",
+    email: r.email ?? "",
+    currentVolume: parseFloat(r.salary.currentVolume),
+    currentTier: r.salary.currentTier,
+    monthlySalary: parseFloat(r.salary.monthlySalary),
+    nextPaymentDate: r.salary.nextPaymentDate,
+    totalSalaryPaid: parseFloat(r.salary.totalSalaryPaid),
+    isActive: r.salary.isActive,
+    lastCalculatedAt: r.salary.lastCalculatedAt,
+    notes: r.salary.notes,
+  })));
+});
+
+router.post("/admin/referral-salary/recalculate", requireAdmin, async (req, res): Promise<void> => {
+  try {
+    const { processReferralSalary } = await import("../lib/roi-engine");
+    const result = await processReferralSalary();
+    res.json({ success: true, updated: result.updated, paid: result.paid });
+  } catch (err: any) {
+    res.status(500).json({ error: "Recalculation failed", message: err?.message ?? String(err) });
+  }
+});
+
+router.put("/admin/referral-salary/settings", requireAdmin, async (req, res): Promise<void> => {
+  const { enabled, tier1Volume, tier1Amount, tier2Volume, tier2Amount } = req.body;
+  const updates: Record<string, string> = {};
+  if (enabled !== undefined) updates["salary_program_enabled"] = String(enabled);
+  if (tier1Volume !== undefined) updates["salary_tier1_volume"] = String(tier1Volume);
+  if (tier1Amount !== undefined) updates["salary_tier1_amount"] = String(tier1Amount);
+  if (tier2Volume !== undefined) updates["salary_tier2_volume"] = String(tier2Volume);
+  if (tier2Amount !== undefined) updates["salary_tier2_amount"] = String(tier2Amount);
+
+  for (const [key, value] of Object.entries(updates)) {
+    await db.insert(platformSettingsTable).values({ key, value })
+      .onConflictDoUpdate({ target: platformSettingsTable.key, set: { value, updatedAt: new Date() } });
+  }
+  res.json({ success: true });
+});
+
+router.put("/admin/referral-salary/:userId/override", requireAdmin, async (req, res): Promise<void> => {
+  const userId = parseInt(String(req.params.userId), 10);
+  const { tier, salary, notes } = req.body;
+
+  const existing = await db.select().from(referralSalaryTable).where(eq(referralSalaryTable.userId, userId)).limit(1);
+
+  if (existing.length === 0) {
+    await db.insert(referralSalaryTable).values({
+      userId,
+      currentTier: tier ?? null,
+      monthlySalary: salary ? String(salary) : "0",
+      isActive: tier !== null && tier !== undefined,
+      notes: notes ?? null,
+    });
+  } else {
+    await db.update(referralSalaryTable)
+      .set({
+        currentTier: tier ?? null,
+        monthlySalary: salary ? String(salary) : "0",
+        isActive: tier !== null && tier !== undefined,
+        notes: notes ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(referralSalaryTable.userId, userId));
+  }
+
+  res.json({ success: true });
+});
+
+router.get("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
+  const settings = await db.select().from(platformSettingsTable);
+  const obj: Record<string, string> = {};
+  for (const s of settings) obj[s.key] = s.value;
+  res.json(obj);
+});
+
+router.put("/admin/settings", requireAdmin, async (req, res): Promise<void> => {
+  const updates = req.body as Record<string, string>;
+
+  for (const [key, value] of Object.entries(updates)) {
+    await db.insert(platformSettingsTable).values({ key, value: String(value) })
+      .onConflictDoUpdate({ target: platformSettingsTable.key, set: { value: String(value), updatedAt: new Date() } });
+  }
+
+  res.json({ success: true });
+});
+
+export default router;

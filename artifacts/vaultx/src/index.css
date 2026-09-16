@@ -1,0 +1,446 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEXORA V3 — DESIGN TOKENS (Emerald / Graphite)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: var(--card-border);
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: var(--popover-border);
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEXORA V3 — LIGHT THEME
+   Premium emerald on warm off-white. Graphite text. Professional financial.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --radius: 0.625rem;
+
+  /* ── Brand ─────────────────────────────────────── */
+  --primary: 160 64% 36%;          /* Deep emerald */
+  --primary-foreground: 0 0% 100%;
+  --accent: 48 96% 53%;            /* Warm gold accent */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 4 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 152 60% 42%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 95% 52%;
+  --warning-foreground: 0 0% 100%;
+
+  /* ── Surfaces ─────────────────────────────────── */
+  --background: 40 20% 97%;        /* Warm off-white */
+  --foreground: 170 10% 14%;       /* Graphite */
+  --card: 0 0% 100%;
+  --card-foreground: 170 10% 14%;
+  --card-border: 40 10% 90%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 170 10% 14%;
+  --popover-border: 40 10% 90%;
+
+  /* ── Interactive ──────────────────────────────── */
+  --secondary: 40 15% 95%;
+  --secondary-foreground: 170 8% 42%;
+  --muted: 40 15% 95%;
+  --muted-foreground: 170 8% 46%;
+  --input: 40 10% 90%;
+
+  /* ── Borders / Ring ───────────────────────────── */
+  --border: 40 10% 90%;
+  --ring: 160 64% 36%;
+  --primary-border: 160 64% 36%;
+  --secondary-border: 40 10% 90%;
+  --muted-border: 40 10% 90%;
+  --accent-border: 48 96% 53%;
+  --destructive-border: 4 72% 51%;
+
+  /* ── Charts ───────────────────────────────────── */
+  --chart-1: 160 64% 36%;
+  --chart-2: 48 96% 53%;
+  --chart-3: 4 72% 51%;
+  --chart-4: 210 40% 55%;
+  --chart-5: 270 50% 55%;
+
+  /* ── Sidebar ──────────────────────────────────── */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 170 10% 14%;
+  --sidebar-border: 40 10% 90%;
+  --sidebar-primary: 160 64% 36%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary-border: 160 64% 36%;
+  --sidebar-accent: 40 15% 95%;
+  --sidebar-accent-foreground: 170 8% 42%;
+  --sidebar-accent-border: 40 10% 90%;
+  --sidebar-ring: 160 64% 36%;
+
+  /* ── Font stack ───────────────────────────────── */
+  --app-font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --app-font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --app-font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEXORA V3 — DARK THEME
+   Deep charcoal/graphite surfaces. Emerald accent. Crisp white text.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.dark {
+  --primary: 160 60% 45%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 48 90% 58%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 4 68% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 152 55% 50%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 90% 56%;
+  --warning-foreground: 0 0% 100%;
+
+  --background: 168 20% 6%;         /* Deep charcoal */
+  --foreground: 160 10% 93%;        /* Off-white */
+  --card: 168 18% 10%;
+  --card-foreground: 160 10% 93%;
+  --card-border: 168 15% 15%;
+  --popover: 168 18% 10%;
+  --popover-foreground: 160 10% 93%;
+  --popover-border: 168 15% 15%;
+
+  --secondary: 168 15% 12%;
+  --secondary-foreground: 160 10% 58%;
+  --muted: 168 15% 12%;
+  --muted-foreground: 160 10% 52%;
+  --input: 168 15% 14%;
+
+  --border: 168 15% 15%;
+  --ring: 160 60% 45%;
+  --primary-border: 160 60% 45%;
+  --secondary-border: 168 15% 15%;
+  --muted-border: 168 15% 15%;
+  --accent-border: 48 90% 58%;
+  --destructive-border: 4 68% 55%;
+
+  --chart-1: 160 60% 45%;
+  --chart-2: 48 90% 58%;
+  --chart-3: 4 68% 55%;
+  --chart-4: 210 40% 60%;
+  --chart-5: 270 50% 60%;
+
+  --sidebar: 168 25% 5%;
+  --sidebar-foreground: 160 15% 85%;
+  --sidebar-border: 168 20% 12%;
+  --sidebar-primary: 160 60% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary-border: 160 60% 45%;
+  --sidebar-accent: 168 20% 12%;
+  --sidebar-accent-foreground: 160 15% 85%;
+  --sidebar-accent-border: 168 20% 12%;
+  --sidebar-ring: 168 20% 12%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEXORA V3 — BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family: var(--app-font-sans);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* ── Smooth theme transition ────────────────────────────────────── */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 350ms ease, color 350ms ease, border-color 350ms ease, box-shadow 350ms ease !important;
+}
+
+/* ── Focus visible ──────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEXORA V3 — UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Surface cards — three elevation levels */
+.v3-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+}
+
+.v3-card-elevated {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  box-shadow:
+    0 1px 2px hsl(var(--foreground) / 0.03),
+    0 4px 12px hsl(var(--foreground) / 0.04);
+}
+
+.v3-card-sunken {
+  background: hsl(var(--muted) / 0.4);
+  border: 1px solid hsl(var(--border) / 0.6);
+  border-radius: 12px;
+}
+
+/* Keep legacy class names working */
+.surface { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 14px; }
+.surface-elevated { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 14px; box-shadow: 0 1px 2px hsl(var(--foreground) / 0.03), 0 4px 12px hsl(var(--foreground) / 0.04); }
+.surface-sunken { background: hsl(var(--muted) / 0.4); border: 1px solid hsl(var(--border) / 0.6); border-radius: 12px; }
+
+/* Financial numbers */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* V3 brand gradient — deep emerald → dark teal */
+.v3-gradient {
+  background: linear-gradient(135deg, hsl(160 64% 30%) 0%, hsl(168 45% 22%) 50%, hsl(175 40% 15%) 100%);
+}
+
+.dark .v3-gradient {
+  background: linear-gradient(135deg, hsl(160 60% 25%) 0%, hsl(168 40% 16%) 50%, hsl(175 35% 10%) 100%);
+}
+
+/* Gold accent gradient */
+.v3-gradient-gold {
+  background: linear-gradient(135deg, hsl(48 96% 53%) 0%, hsl(36 90% 45%) 100%);
+}
+
+.dark .v3-gradient-gold {
+  background: linear-gradient(135deg, hsl(48 90% 48%) 0%, hsl(36 85% 40%) 100%);
+}
+
+/* Legacy gradient alias */
+.wexora-gradient { background: linear-gradient(135deg, hsl(160 64% 30%) 0%, hsl(168 45% 22%) 50%, hsl(175 40% 15%) 100%); }
+.dark .wexora-gradient { background: linear-gradient(135deg, hsl(160 60% 25%) 0%, hsl(168 40% 16%) 50%, hsl(175 35% 10%) 100%); }
+
+/* ── Animations ─────────────────────────────────────────────────── */
+@keyframes v3-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes v3-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes v3-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in { animation: v3-fade-in 0.3s ease-out; }
+.animate-slide-up { animation: v3-slide-up 0.4s ease-out; }
+.animate-scale-in { animation: v3-scale-in 0.25s ease-out; }
+
+/* Stagger children */
+.stagger-children > * { animation: v3-fade-in 0.3s ease-out backwards; }
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+
+/* Shimmer loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted) / 0.5) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Step indicator */
+.v3-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+.v3-step-dot.active {
+  background: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+  width: 10px;
+  height: 10px;
+}
+.v3-step-dot.completed {
+  background: hsl(var(--primary));
+}
+.v3-step-dot.pending {
+  background: hsl(var(--muted));
+}
+
+/* ── Sidebar nav area scroll ─────────────────────────────────────── */
+.sidebar-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ── Mobile overflow prevention ────────────────────────────────── */
+html, body, #root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ── RTL support ───────────────────────────────────────────────── */
+/* When the app language is RTL (Arabic/Urdu), flip directional layout.
+   Tailwind logical utilities (ps-*, pe-*, ms-*, me-*, text-start/end) are
+   preferred in components; these rules cover the remaining hardcoded cases. */
+html[dir="rtl"] .lg\:pl-\[260px\] {
+  padding-left: 0;
+  padding-right: 260px;
+}
+
+html[dir="rtl"] .lg\:fixed.lg\:left-0 {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] .translate-x-0,
+html[dir="rtl"] .-translate-x-full {
+  transform: none;
+}
+
+html[dir="rtl"] .drawer-open {
+  transform: translateX(0);
+}
+
+html[dir="rtl"] .drawer-closed {
+  transform: translateX(100%);
+}
+
+html[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+html[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in, .animate-slide-up, .animate-scale-in, .stagger-children > * {
+    animation: none !important;
+  }
+}
