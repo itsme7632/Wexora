@@ -39,6 +39,9 @@ minimumReleaseAgeExclude:
 packages:
   - artifacts/*
   - lib/*
+  # API code generation uses a publish-blocked dev-only package. Generated
+  # clients are committed and consumed by the runtime packages below.
+  - '!lib/api-spec'
   - lib/integrations/*
   - scripts
 
