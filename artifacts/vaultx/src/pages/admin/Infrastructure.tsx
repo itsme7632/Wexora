@@ -146,7 +146,7 @@ function NetworksSection() {
 
       {/* Network Modal */}
       <Dialog open={!!modal} onOpenChange={(o) => !o && setModal(null)}>
-        <DialogContent className="max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-sm w-[calc(100vw-1.5rem)] sm:w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{modal?.id ? "Edit Network" : "Add Network"}</DialogTitle></DialogHeader>
           {modal && (
             <div className="space-y-3 pt-2">
@@ -307,7 +307,7 @@ function StatisticsSection() {
       </div>
 
       {/* Mode selector */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {[
           { id: "real", label: "Real Data", desc: "Live database values", icon: Activity },
           { id: "custom", label: "Custom", desc: "Manually set values", icon: Tag },

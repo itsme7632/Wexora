@@ -369,7 +369,7 @@ export default function VerificationSection() {
 
       {/* ── IMAGE MODAL ── */}
       <Dialog open={!!proofModal} onOpenChange={(o) => !o && setProofModal(null)}>
-        <DialogContent className="max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl w-[calc(100vw-1.5rem)] sm:w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Document Preview</DialogTitle></DialogHeader>
           {proofModal && (
             <div className="mt-2">

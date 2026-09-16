@@ -226,7 +226,7 @@ export default function InvestmentsSection() {
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input value={planSearch} onChange={(e) => setPlanSearch(e.target.value)} placeholder="Search properties..." className="w-full pl-8 pr-3 h-9 text-sm rounded-xl border border-border bg-muted/30 focus:outline-none focus:ring-1 focus:ring-primary" />
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <Select value={planStatusFilter} onValueChange={setPlanStatusFilter}>
             <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
@@ -332,7 +332,7 @@ export default function InvestmentsSection() {
 
       {/* ── PLAN EDIT MODAL ── */}
       <Dialog open={!!planModal} onOpenChange={(o) => !o && setPlanModal(null)}>
-        <DialogContent className="max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-sm w-[calc(100vw-1.5rem)] sm:w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{planModal?.id ? "Edit Property" : "New Property"}</DialogTitle></DialogHeader>
           {planModal && (
             <div className="space-y-3 pt-2">

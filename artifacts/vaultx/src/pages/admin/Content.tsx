@@ -196,7 +196,7 @@ function FaqSection() {
       ) : <div className="py-10 text-center text-sm text-muted-foreground v3-card">No FAQs found</div>}
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditing(null); setForm({ question: "", answer: "", category: "General", isActive: true, sortOrder: 0 }); } }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[calc(100vw-1.5rem)] sm:w-full">
           <DialogHeader><DialogTitle>{editing ? "Edit FAQ" : "Add FAQ"}</DialogTitle></DialogHeader>
           <div className="space-y-3 pt-1">
             <div><Label className="text-xs">Question *</Label><Input value={form.question} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} className="mt-1 h-9 text-sm" /></div>
@@ -292,7 +292,7 @@ function AnnouncementsSection() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) setEditing(null); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg w-[calc(100vw-1.5rem)] sm:w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit Announcement" : "Create Announcement"}</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-1">
             <div><Label className="text-xs font-semibold mb-1.5 block">Title *</Label><Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="h-9 text-sm" /></div>

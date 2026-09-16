@@ -39,17 +39,19 @@ export default function AdminPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
+    <div className="min-h-screen bg-background">
+      {/* Desktop sidebar / Mobile header (rendered by AdminNav) */}
       <AdminNav
         active={section}
         onNavigate={handleNavigate}
         pendingCounts={pendingCounts}
       />
 
-      {/* Main Content */}
-      <main className="flex-1 min-w-0 lg:ml-0 pb-20 lg:pb-6">
-        <div className="px-4 pt-4 lg:px-6 lg:pt-6 max-w-5xl">
+      {/* Main Content — lg+ sits beside the sidebar; below lg it sits below the fixed header */}
+      <main className="lg:ml-56 min-w-0">
+        <div className="px-4 pt-4 pb-24 lg:px-6 lg:pt-6 lg:pb-6 max-w-5xl">
+          {/* Mobile-only spacing to clear the fixed header */}
+          <div className="lg:hidden h-14" aria-hidden="true" />
           {section === "overview" && <OverviewSection onNavigate={handleNavigate} />}
           {section === "users" && <UsersSection />}
           {section === "finance" && <FinanceSection subTab={financeTab} onSubTabChange={setFinanceTab} />}

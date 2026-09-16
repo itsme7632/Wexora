@@ -19,14 +19,25 @@ import { EmailService } from "../lib/email";
 
 const router: IRouter = Router();
 
-// ── Dev-only: detect if email service is available ────────────────────────────
-// When RESEND_API_KEY is not set, emails are skipped. In non-production environments
-// we auto-verify users so they can test without needing a real email service.
+// ── Email verification switch (reversible) ──────────────────────────────────
+// EMAIL_VERIFICATION_REQUIRED=false disables the email-verification gate.
+// The entire verification feature stays intact (code generation, storage,
+// /auth/verify-email, /auth/resend-verification, verify-email page) — only
+// whether signup blocks on it changes. Set EMAIL_VERIFICATION_REQUIRED=true
+// (or remove the variable) to re-enable verification at any time.
+function isEmailVerificationDisabled(): boolean {
+  return String(process.env.EMAIL_VERIFICATION_REQUIRED ?? "true").trim().toLowerCase() === "false";
+}
+
+// Legacy helper kept for the dev auto-verify path: without RESEND_API_KEY in
+// non-production environments, emails would be silently skipped, so users are
+// auto-verified instead (dev convenience only — production must use the
+// explicit EMAIL_VERIFICATION_REQUIRED flag).
 function isEmailServiceConfigured(): boolean {
   return !!process.env.RESEND_API_KEY;
 }
 function isDevAutoVerify(): boolean {
-  return !isEmailServiceConfigured() && process.env.NODE_ENV !== "production";
+  return !isEmailVerificationDisabled() && !isEmailServiceConfigured() && process.env.NODE_ENV !== "production";
 }
 
 // ── Serialise user (public-facing) ────────────────────────────────────────────
@@ -241,6 +252,27 @@ router.post("/auth/signup", async (req, res): Promise<void> => {
     }
   }
 
+  // ── Verification disabled by configuration: mark verified and log in ────
+  // Reversible switch — see isEmailVerificationDisabled() above.
+  if (isEmailVerificationDisabled()) {
+    const [updated] = await db
+      .update(usersTable)
+      .set({
+        emailVerified: true,
+        emailVerificationCode: null,
+        emailVerificationExpires: null,
+      })
+      .where(eq(usersTable.id, user.id))
+      .returning();
+
+    req.session.userId = updated.id;
+    req.session.isAdmin = updated.isAdmin;
+
+    console.log(`[email-verification:disabled] Auto-verified and logged in: ${user.email}`);
+    res.status(201).json({ user: serializeUser(updated) });
+    return;
+  }
+
   // ── Dev auto-verify: when no email service, auto-verify and log in ──────
   if (isDevAutoVerify()) {
     const [updated] = await db
@@ -418,9 +450,19 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  // ── Block unverified accounts (or auto-verify in dev) ───────────────────
+  // ── Block unverified accounts (unless verification is disabled / dev) ────
   if (!user.emailVerified) {
-    if (isDevAutoVerify()) {
+    if (isEmailVerificationDisabled()) {
+      // Verification disabled by configuration: let the user in and clear the
+      // pending state so legacy unverified accounts are never dead-ended.
+      const [updated] = await db
+        .update(usersTable)
+        .set({ emailVerified: true, emailVerificationCode: null, emailVerificationExpires: null })
+        .where(eq(usersTable.id, user.id))
+        .returning();
+      user.emailVerified = true;
+      console.log(`[email-verification:disabled] Auto-verified on login: ${user.email}`);
+    } else if (isDevAutoVerify()) {
       // Dev mode: auto-verify unverified users so they can log in
       const [updated] = await db
         .update(usersTable)
