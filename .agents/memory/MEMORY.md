@@ -8,5 +8,3 @@
 - [Admin Session Staleness](admin-session-staleness.md) — req.session.isAdmin set only at login; admin promotions via admin panel don't update the promoted user's session; fix: community POST checks DB directly for isAdmin + syncs session; also added POST /auth/refresh-session to force-sync session from DB
 - [Profile Edit — Locked Fields](profile-locked-fields.md) — Only fullName is editable; whatsapp/country/email are locked (shown read-only with Lock icon); save only sends {fullName}; sending whatsapp field triggers whatsappLocked error even when unchanged
 - [Drizzle ANY array bug](drizzle-any-array-bug.md) — sql`` template with JS array generates ANY(($1,$2)::int[]) which Postgres rejects; use inArray(col, arr) instead; guard with arr.length>0
-- [Startup Toolchain Compatibility](startup-toolchain.md) — keep the root pnpm pin aligned with the runtime or managed workflows can fail before app startup
-- [Publish Tooling Dependencies](publish-tooling-dependencies.md) — code-generation-only packages can block publishing when workspace install covers every package
